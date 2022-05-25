@@ -1,0 +1,51 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Light-weight lockstep processors for increased performance and safety
+\thanks{\color{red}This research was founded by.....}
+}
+
+\author{\IEEEauthorblockN{Francisco Bas, Felipe Gallego Ruben Lorenzo, Guillem Cabo, David Trilla, Jaume Abella}
+\IEEEauthorblockA{Barcelona Supercomputing Center}}
+
+\maketitle
+
+\begin{abstract}
+Functional safety is one of the most important (if not the most) design consideration for Safety-Critical Systems (SCS).
+Safety standards (e.g. ISO-26262 for automotive) define what measures must be taken in specific instances of SCS' to ensure that critical hazards
+are sufficiently mitigated. At the highest levels of safety (e.g. ASIL-D in automotive, DAL-A for avionics) systems are required
+to keep operating even under the presence of faults, which often involves the redundant execution of task with double or even triple redundancy schemes
+depending on the amount of safety required.
+However such replication incurs in non-neglegible area costs, sometimes devouting cores to perform redundant work,
+hence diminishing amount of transistors that can be devouted to obtaning more performance.
+In this paper we present a modular light-weight lockstep execution unit, that provides lockstep support
+on demand to multicore architectures, therefore adding flexibility and enabling high-performance or safe
+execution whenever needed. Our module attaches to commonly available core counter and control signals
+avoiding costly reverificaiton of already existing Functional Unit Blocks (FUBs) and providing ease of
+scalability. We show that our proposal only incurs in X\% penalty while being able to detect a high amount of faults.
+\end{abstract}
+
+\begin{IEEEkeywords}
+functional safety, redundancy, diversity, faults
+\end{IEEEkeywords}
+
+
+\input{intro}
+\input{back}
+\input{realization}
+\input{conclusion}
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}

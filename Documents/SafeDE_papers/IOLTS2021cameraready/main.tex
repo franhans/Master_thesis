@@ -1,0 +1,61 @@
+\documentclass[conference,a4paper,10pt]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{multirow}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{SafeDE: a flexible \underline{D}iversity \underline{E}nforcement hardware module for light-lockstepping}
+
+
+\author{
+  \IEEEauthorblockN{Francisco Bas$^{\dagger,\ddagger}$, Sergi Alcaide$^{\dagger}$, Ruben Lorenzo$^{\dagger}$, Guillem Cabo$^{\dagger}$, Guillermo Gil$^{\dagger}$,\\ 
+                    Oriol Sala$^{\dagger,\ddagger}$, Fabio Mazzocchetti$^{\dagger}$, David Trilla$^{\dagger}$, Jaume Abella$^{\dagger}$}
+  \IEEEauthorblockA{
+    $^\dagger$ Barcelona Supercomputing Center (BSC). Barcelona, Spain\\
+    $^\ddagger$ Universitat Polit\`{e}cnica de Catalunya (UPC), Barcelona, Spain
+\vspace{-0.1cm}
+}}
+
+\maketitle
+
+\begin{abstract}
+Safety-related systems, such as those in automotive, avionics and space, impose the existence of appropriate safety measures to meet the safety requirements of the system. In the case of the highest integrity level functionalities (e.g. ASIL-D in automotive), diverse redundancy must be deployed to avoid unreasonable risk of a single fault leading the system to a failure (e.g. using lockstepped cores). 
+%This is achieved including features such as error correction codes for storage, and lockstep execution for computing units (e.g. cores). However, in the case of lockstep, 
+However, existing lockstep solutions are either (1) highly intrusive and inflexible coupling two cores with hardware means, or (2) costly in terms of execution time and monitoring if a software monitor thread checks that cores running redundantly preserve sufficient staggering.
+
+This paper presents \textbf{SafeDE}, a \underline{D}iversity \underline{E}nforcement hardware module providing light-lockstep support by means of a non-intrusive and flexible hardware module that preserves staggering across cores running redundant threads, thus bringing time diversity. SafeDE reconciles the lightness and flexibility of software-only solutions, even allowing using the cores without any lockstepping, as well as the tighter staggering of hardware-only solutions that allow using staggering values of few cycles, instead of hundreds of microseconds, as for software-only solutions.
+Our integration of SafeDE in a RISC-V FPGA-based space multicore from Cobham Gaisler shows that staggering is effectively preserved, and SafeDE overheads are negligible in terms of area and performance due to staggering.
+\end{abstract}
+
+%\begin{IEEEkeywords}
+%functional safety, redundancy, diversity, faults
+%\end{IEEEkeywords}
+
+%\linespread{0.99}
+%\selectfont
+
+\input{1.0.introduction.tex}
+\input{2.0.Background.tex}
+\input{3.0.DiMMo.tex}
+\input{4.0.Evaluation.tex}
+\input{5.0.Related.tex}
+\input{6.0.Conclusions.tex}
+
+\section*{Acknowledgements}
+This work has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement no. 871467. 
+This work has also been partially supported by the Spanish Ministry of Science and Innovation under grant PID2019-107255GB.
+
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}

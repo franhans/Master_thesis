@@ -1,0 +1,229 @@
+\begin{thebibliography}{10}
+
+\bibitem{SergiDATE}
+S.~{Alcaide et al.}
+\newblock High-integrity gpu designs for critical real-time automotive systems.
+\newblock In {\em DATE}, 2019.
+
+\bibitem{SergiIOLTS}
+S.~{Alcaide et al.}
+\newblock {Software-only Diverse Redundancy on GPUs for Autonomous Driving
+  Platforms}.
+\newblock In {\em IOLTS}, 2019.
+
+\bibitem{SergiDFT}
+S.~{Alcaide et al.}
+\newblock Software-only based diverse redundancy for asil-d automotive
+  applications on embedded hpc platforms.
+\newblock In {\em DFT}, pages 1--4, 2020.
+
+\bibitem{Alhakeem2015}
+M.~S. {Alhakeem et al.}
+\newblock {A Framework for Adaptive Software-Based Reliability in COTS
+  Many-Core Processors}.
+\newblock In {\em ARCS}, 2015.
+
+\bibitem{ClassicDiversity}
+A.~Avizienis and J.P.J. Kelly.
+\newblock Fault tolerance by design diversity: Concepts and experiments.
+\newblock {\em Computer}, 17(8):67--80, 1984.
+
+\bibitem{SafeTIWebsite}
+{BSC - CAOS}.
+\newblock {SafeTI}.
+\newblock \url{https://bsccaos.github.io}.
+
+\bibitem{softwareapproaches_gpgpureliability}
+M.~{Dimitrov et al.}
+\newblock Understanding software approaches for gpgpu reliability.
+\newblock 2009.
+
+\bibitem{taclebench}
+Heiko Falk, Sebastian Altmeyer, Peter Hellinckx, Bj{\"o}rn Lisper, Wolfgang
+  Puffitsch, Christine Rochange, Martin Schoeberl, Rasmus~Bo Sorensen, Peter
+  W{\"a}gemann, and Simon Wegener.
+\newblock {TACLeBench: A Benchmark Collection to Support Worst-Case Execution
+  Time Research}.
+\newblock In Martin Schoeberl, editor, {\em 16th International Workshop on
+  Worst-Case Execution Time Analysis (WCET 2016)}, volume~55 of {\em OpenAccess
+  Series in Informatics (OASIcs)}, pages 2:1--2:10, Dagstuhl, Germany, 2016.
+  Schloss Dagstuhl--Leibniz-Zentrum fuer Informatik.
+
+\bibitem{on_demand_redundancy}
+J.~{Fu et al.}
+\newblock On-demand thread-level fault detection in a concurrent programming
+  environment.
+\newblock In {\em SAMOS}, 2013.
+
+\bibitem{Gomaa2003}
+M~{Gomaa et al.}
+\newblock {Transient-fault recovery for chip multiprocessors}.
+\newblock In {\em ISCA}, 2003.
+
+\bibitem{DeRISCjournal}
+P.~{Gomez et al.}
+\newblock {De-RISC – Dependable Real-time Infrastructure for Safety-critical
+  Computer Systems}.
+\newblock {\em Ada User Journal}, June 2020.
+
+\bibitem{Haas2017}
+F.~{Haas et al.}
+\newblock {Fault-tolerant execution on cots multi-core processors with hardware
+  transactional memory support}.
+\newblock In {\em ARCS}, 2017.
+
+\bibitem{DATEcheckpointing}
+C.~{Hernandez} and J.~{Abella}.
+\newblock Low-cost checkpointing in automotive safety-relevant systems.
+\newblock In {\em DATE}, 2015.
+
+\bibitem{TCAD}
+Carles Hernandez and Jaume Abella.
+\newblock {Timely Error Detection for Effective Recovery in Light-Lockstep
+  Automotive Systems}.
+\newblock {\em IEEE TCAD}, 2015.
+
+\bibitem{infineon_aurix}
+Infineon.
+\newblock {AURIX Multicore 32-bit Microcontroller Family to Meet Safety and
+  Powertrain Requirements of Upcoming Vehicle Generations}, 2012.
+
+\bibitem{ISO26262}
+{International Standards Organization}.
+\newblock {\em {ISO/DIS 26262. Road Vehicles -- Functional Safety}}, 2009.
+
+\bibitem{paper1}
+X.~{Iturbe et al.}
+\newblock {Addressing Functional Safety Challenges in Autonomous Vehicles with
+  the Arm Triple Core Lock-Step (TCLS) Architecture}.
+\newblock {\em IEEE Design and Test}, 2018.
+
+\bibitem{Iturbe2019}
+X.~{Iturbe et al.}
+\newblock {The Arm triple core lock-step (TCLS) processor}.
+\newblock {\em ACM Transactions on Computer Systems}, 2019.
+
+\bibitem{Jain2019}
+S.~{Jain et al.}
+\newblock {Fractional GPUs: Software-based compute and memory bandwidth
+  reservation for GPUs}.
+\newblock In {\em RTAS}, 2019.
+
+\bibitem{Jeon2012}
+H.~{Jeon et al.}
+\newblock {Warped-DMR: Light-weight error detection for GPGPU}.
+\newblock In {\em MICRO}, 2012.
+
+\bibitem{dynamic_coupled_cores}
+C.~{LaFrieda et al.}
+\newblock {Utilizing dynamically coupled cores to form a resilient chip
+  multiprocessor}.
+\newblock In {\em DSN}, 2007.
+
+\bibitem{instruction_replication_gpu}
+A.~{Mahmoud et al.}
+\newblock Optimizing software-directed instruction replication for gpu error
+  detection.
+\newblock In {\em SC}, 2018.
+
+\bibitem{relaxing_criticallity}
+B.~H. {Meyer et al.}
+\newblock Cost-effective safety and fault localization using distributed
+  temporal redundancy.
+\newblock In {\em CASES}, 2011.
+
+\bibitem{Mukherjee2002}
+S.~S. {Mukherjee et al.}
+\newblock {Detailed design and evaluation of redundant multithreading
+  alternatives}.
+\newblock In {\em ISCA}, 2002.
+
+\bibitem{Mushtaq2013}
+H.~{Mushtaq et al.}
+\newblock {Efficient software-based fault tolerance approach on multicore
+  platforms}.
+\newblock In {\em DATE}, 2013.
+
+\bibitem{Nathan2015}
+Ralph Nathan and Daniel~J. Sorin.
+\newblock {Argus-G: Comprehensive, low-cost error detection for GPGPU cores}.
+\newblock {\em IEEE Computer Architecture Letters}, 2015.
+
+\bibitem{SMTredundancy}
+S.~K. {Reinhardt et al.}
+\newblock {Transient fault detection via simultaneous multithreading}.
+\newblock In {\em ISCA}, 2000.
+
+\bibitem{Reis2005}
+G.~A. {Reis et al.}
+\newblock {SWIFT: Software implemented fault tolerance}.
+\newblock In {\em CGO}, 2005.
+
+\bibitem{DivDMR}
+Pedro Reviriego, Chris~J. Bleakley, and Juan~Antonio Maestro.
+\newblock Diverse double modular redundancy: A new direction for soft-error
+  detection and correction.
+\newblock {\em IEEE Design Test}, 30(2):87--95, 2013.
+
+\bibitem{Rotenberg1999}
+E.~{Rotenberg}.
+\newblock {AR-SMT: a microarchitectural approach to fault tolerance in
+  microprocessors}.
+\newblock {\em FTC}, 1999.
+
+\bibitem{Scales2010}
+J.~D. {Scales et al.}
+\newblock {The design of a practical system for fault-tolerant virtual
+  machines}.
+\newblock {\em Operating Systems Review (ACM)}, 2010.
+
+\bibitem{Shye2007}
+A~{Shye et al.}
+\newblock Using process-level redundancy to exploit multiple cores for
+  transient fault tolerance.
+\newblock In {\em DSN}, 2007.
+
+\bibitem{Shye2009}
+A.~{Shye et al.}
+\newblock {PLR: A software approach to transient fault tolerance for multicore
+  architectures}.
+\newblock {\em IEEE Transactions on Dependable and Secure Computing}, 2009.
+
+\bibitem{So2018}
+H.~{So et al.}
+\newblock {Expert: Effective and flexible error protection by redundant
+  multithreading}.
+\newblock {\em DATE}, 2018.
+
+\bibitem{STlockstep}
+{STMicroelectronics}.
+\newblock {32-bit Power Architecture microcontroller for automotive
+  {SIL3/ASILD} chassis and safety applications}, 2014.
+
+\bibitem{Swapcodes}
+M.~B. {Sullivan et al}.
+\newblock Swapcodes: Error codes for hardware-software cooperative gpu pipeline
+  error detection.
+\newblock In {\em MICRO}, 2018.
+
+\bibitem{RendundancyASILD}
+{Synopsys, Inc.}
+\newblock {Synopsys Announces Industry's First ASIL D Ready Dual-Core Lockstep
+  Processor IP with Integrated Safety Monitor}.
+\newblock
+  \url{https://www.eejournal.com/industry_news/synopsys-simplifies-automotive-soc-development-with-new-arc-\\functional-safety-processor-ip},
+  2017.
+
+\bibitem{Vargas2018}
+V.~{Vargas et al.}
+\newblock {NMR-MPar: A fault-tolerance approach for multi-core and many-core
+  processors}.
+\newblock {\em Applied Sciences (Switzerland)}, 2018.
+
+\bibitem{inter-intra-workgroup}
+J.~{Wadden et al}.
+\newblock Real-world design and evaluation of compiler-managed gpu redundant
+  multithreading.
+\newblock In {\em ISCA}, 2014.
+
+\end{thebibliography}

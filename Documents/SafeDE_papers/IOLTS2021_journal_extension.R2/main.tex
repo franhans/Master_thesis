@@ -1,0 +1,67 @@
+\documentclass[journal]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{multirow}
+%\usepackage{caption}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{SafeDE: A Low-Cost Hardware Solution \\ to Enforce Diverse Redundancy in Multicores \thanks{Copyright © 2017 (or current year) IEEE. Personal use of this material is permitted.  However, permission to use this material for any other purposes must be obtained by sending a request to pubs-permissions@ieee.org}}
+
+\author{
+  \IEEEauthorblockN{Francisco Bas\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}, Sergi Alcaide\IEEEauthorrefmark{1}\IEEEauthorrefmark{2}, 
+  Guillem Cabo\IEEEauthorrefmark{1}, Pedro Benedicte\IEEEauthorrefmark{1}, Jaume Abella\IEEEauthorrefmark{1}}\\
+  \IEEEauthorblockA{\IEEEauthorrefmark{1}Barcelona Supercomputing Center (BSC)
+  \\\{francisco.basjalon, sergi.alcaide, guillem.cabo, pedro.benedicteillescas, jaume.abella\}@bsc.es}
+  \\\IEEEauthorblockA{\IEEEauthorrefmark{2} Universitat Polit\`{e}cnica de Catalunya (UPC)
+  }
+}
+
+\maketitle
+
+\begin{abstract}
+Failure risk must be tiny
+in high-integrity systems, such as those in cars, satellites and aircraft. Hence, safety measures must be deployed to avoid a single fault leading to a failure. Redundancy has been often used to address this concern, but it has been proven insufficient if a single fault can cause the same error in all redundant elements, which defeats the purpose of redundancy for error detection. Hence, to avoid this scenario, diversity is implemented along with redundancy, being lockstep execution the most popular diverse redundancy solution for computing cores. However, classic lockstep solutions have non-negligible limitations if implemented in hardware (e.g., half of the cores can only be used for redundant execution and are not even visible at user level), or in software (e.g., the software loop to enforce staggering is long and costs performance).
+
+This paper tackles the limitations of classic lockstep solutions by 
+providing an extended analysis and evaluation of
+\textbf{SafeDE}, a \underline{D}iversity \underline{E}nforcement hardware module combining the short loop to enforce diversity of hardware solutions, and the non-intrusiveness of software solutions. Hence, cores can operate in lockstep mode efficiently or run independent tasks. 
+In this paper, we present SafeDE and its rationale, its application to N-modular systems, its hardware and software integration, and an evaluation showing its performance and area efficiency, and its behavior in 
+the presence
+of faults.
+\end{abstract}
+
+\begin{IEEEkeywords}
+functional safety, redundancy, diversity, faults
+\end{IEEEkeywords}
+
+
+
+
+\input{1.0.introduction.tex}
+\input{2.0.Background.tex}
+\input{3.0.DiMMo.tex}
+\input{4.0.Evaluation.tex}
+\input{5.0.Related.tex}
+\input{6.0.Conclusions.tex}
+
+\color{black}
+
+
+\section*{Acknowledgements}
+This work has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement no. 871467. 
+This work has also been partially supported by the Spanish Ministry of Science and Innovation under grant PID2019-107255GB-C21/AEI/10.13039/501100011033.
+
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}

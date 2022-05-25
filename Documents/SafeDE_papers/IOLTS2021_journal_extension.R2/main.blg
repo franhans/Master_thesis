@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: main.aux
+The style file: plain.bst
+Database file #1: biblio.bib
+Warning--empty booktitle in softwareapproaches_gpgpureliability
+Warning--empty year in taclebench
+You've used 39 entries,
+            2118 wiz_defined-function locations,
+            690 strings with 8986 characters,
+and the built_in function-call counts, 9052 in all, are:
+= -- 806
+> -- 297
+< -- 1
++ -- 125
+- -- 86
+* -- 374
+:= -- 1549
+add.period$ -- 114
+call.type$ -- 39
+change.case$ -- 159
+chr.to.int$ -- 0
+cite$ -- 41
+duplicate$ -- 475
+empty$ -- 959
+format.name$ -- 86
+if$ -- 1947
+int.to.chr$ -- 0
+int.to.str$ -- 39
+missing$ -- 34
+newline$ -- 195
+num.names$ -- 78
+pop$ -- 269
+preamble$ -- 1
+purify$ -- 121
+quote$ -- 0
+skip$ -- 284
+stack$ -- 0
+substring$ -- 237
+swap$ -- 67
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 156
+warning$ -- 2
+while$ -- 82
+width$ -- 41
+write$ -- 387
+(There were 2 warnings)

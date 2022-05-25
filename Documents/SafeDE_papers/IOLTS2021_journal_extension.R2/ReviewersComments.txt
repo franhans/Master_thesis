@@ -1,0 +1,92 @@
+Reviewer(s)' Comments to Author:
+
+Reviewer: 1
+
+Comments to the Author
+
+The IOLTS paper has been significantly extended and I think the manuscript merits publication in the TDMR SS for IOLTS.
+I have however a few comments and suggestions for the authors:
+
+1) It may be worth adding SafeDE to the title, for example: "SafeDE: A Low-Cost Hardware Solution to Enforce Diverse Redundancy in Multicores"
+
+2) Abstract:
+
+- Please rephrase this sentence as risk not been unreasonable sounds weird "Failure risk must not be unreasonable in high-integrity systems, such as those in cars, satellites and aircraft."
+- Please rewrite "behavior in front of faults."
+
+3) Introduction:
+
+- "avoiding the unreasonable risk" -> "avoiding the unacceptable risk"
+- "are most common solutions" -> "are most the common solutions"
+
+4) Section III:
+
+- "until CritSec2 is activated"  I think it should be "until CritSec is activated"
+- The TMR implementation is only discussed theoretically but not implemented. It would be nice to evaluate the impact on performance as it seems that staggering would be proportional to the number of redundant copies.
+- "unnecessary stalls occur," I think it should be "unnecessary stalls do not occur,"
+
+5) Section IV:
+
+- I think it would be good to run more FI experiments to get a relevant number of failures (as most are masked you only get a few failing runs that may not be enough to capture all relevant effects).
+- In Figure 6 it would be better to put the % of variation relative to the execution time in isolation. The current label of the y-axis is confusing.
+- In Figure 6 it may be better to also include the % for the SW based diversity to see the overhead of SW based protection.
+
+Reviewer: 2
+
+Comments to the Author
+Toward increasing critical safety, two types of solutions have been proposed in the past: hardware based lock-step execution, which is very powerful but where half of the cores are not visible to the user, and software based light lockstep execution, where a software monitor takes over the checking process and has less effectiveness as it operates at larger intervals of time, but allows for better core utilization. In this paper the authors describe a solution that seeks to take advantage of the best of both worlds. They introduce a small hardware module that replaces the role of the software monitoring process and can therefore operate at much shorter time intervals.
+
+While the initial implementation of this solution, which was presented at IOLTS'21, is already novel and interesting, the extended journal submission  adds three very important and very interesting aspects to the overall methodology.
+
+First, beyond the 2-modular redundancy that the original solution offers, the authors provide a clear framework for extending it to N-modular redundancy, thereby giving the user flexibility as to how to explore the trade-off between safety attained and overhead incurred.
+
+Second, the authors delve deeper into implementation issues that allow hybrid hardware/software integration of the proposed scheme, essentially offering options as to what side will incur more overhead and what side will offer more flexibility in the implementation. Redundancy can now be split across the hardware/software interface, giving an overall far more agile solution.
+
+Third, the filled a gap that existed in the original conference paper, namely the lack of a fault-injection based evaluation. Accordingly, the journal version is now complete, offering not only a clear evaluation of performance and area overhead but also a quantification of the ability of the scheme to suppress fault, including common-cause failures, which are the ultimately target of the proposed method.
+
+Overall, the paper is very well written and easy to follow, and the solution is simple and elegant, and described in sufficient detail. Moreover, it is implemented in an FPGA prototyping platform using a commercial RISC-V type of processor, hence it's effectiveness is shown at industrial scale. I believe that the readers of TDMR will find this paper of interest and the proposed method of actual utility.
+
+
+
+Reviewer: 3
+
+Comments to the Author
+This work presents an approach to mitigate faults for safety critical application.
+It allows a trade-off between tight lockstep and software only lockstep.
+Although it is still intrusive both in the hardware design and in the software code, it offers another alternative for the designers in the domain.
+I appreciate the added technical content against the conference version, especially the fault injection campaign and the software study. However the usage and the monitoring of the critical sections is not clear enough.
+Some parts should be improved to make them more clear and more accurate, i list here under some of them:
+
+- in the abstract, line 27-28: "can be made operate" should be rephrased
+- in the introduction l. 42: CCFs should be better defined here (which type of faults SA, SEU, ...)
+- p2, l.42-43: "being the state of trail core...before" should be rephrased
+- p2 column 2: "Note that THstag must be set to be large enough so that the trail core cannot execute those many instructions during Tcheck." => Not clear should be rephrased
+- p3 l.10: CritSec1 and CritSec2 determine whether the head and trail cores respectively are executing the code region needing lockstep execution." => i don't really get the behaviour of the usage of these registers, does they contain the adresses of the beginning of the critical regions ?
+=> should be better explained
+- p3 column 2: "Also, Safe DE, ...regions" should be rephrased, not clear
+- p4 column 2 l.54: "SafeDe" => typo
+- p5 column 2 l.60: "afected" => typo and word not very appropriate here
+- p6 l.25: "The possible outcomes considered are:" you should explain why you use these metrics, especially DUE since this metric is stuck to 0 in your experiments. Why don't you consider other metrics ?
+
+
+
+
+Reviewer: 4
+
+Comments to the Author
+This paper enhances SafeDE, a mixed solution between fully-hardware lockstep and fully-software lockstep.
+The solution is based on the introduction of a tiny hardware monitor who constantly checks whether two processors are executing the same software at the predefined difference of cycles (staggering).
+
+The solution is not applicable to a large set of applications, but still it introduces a nice alternative to the hardware lockstep, with a limited impact on hardware overhead and with high flexibility.
+
+Compared to the conference paper, this paper introduces:
+- the extension to arbitrary redundancy (e.g., with 3 or more cores instead of only 2).
+- the software integration (for both bare metal and linux)
+- a fault injection campaign
+
+
+I suggest to review language and grammar.
+
+
+page 1, line 25: SafeDE is introduced in the IOLTS paper, not in this one.
+You should make it clear in the abstract and in the introduction

@@ -1,0 +1,38 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\babel@toc {english}{}
+\contentsline {chapter}{Declaration of Authorship}{iii}{section*.1}
+\contentsline {chapter}{Abstract}{vii}{section*.2}
+\contentsline {chapter}{Acknowledgements}{ix}{section*.3}
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.14}
+\contentsline {section}{\numberline {1.1}Motivation}{1}{section.15}
+\contentsline {section}{\numberline {1.2}Contribution}{1}{section.16}
+\contentsline {section}{\numberline {1.3}Structure of the Thesis}{1}{section.17}
+\contentsline {chapter}{\numberline {2}Background}{3}{chapter.18}
+\contentsline {section}{\numberline {2.1}Fault, Failures and Errors}{3}{section.19}
+\contentsline {section}{\numberline {2.2}Safety Related Systems}{3}{section.20}
+\contentsline {section}{\numberline {2.3}Fault detection}{3}{section.21}
+\contentsline {section}{\numberline {2.4}Redundancy and Sphere of Replication}{3}{section.22}
+\contentsline {section}{\numberline {2.5}Diversity}{3}{section.23}
+\contentsline {section}{\numberline {2.6}Lockstep execution}{3}{section.24}
+\contentsline {subsection}{\numberline {2.6.1}Hardware Lockstep Execution}{3}{subsection.25}
+\contentsline {subsection}{\numberline {2.6.2}Software Lockstep Execution}{3}{subsection.26}
+\contentsline {section}{\numberline {2.7}Other Fault detection Approaches}{3}{section.27}
+\contentsline {chapter}{\numberline {3}SafeDE}{5}{chapter.28}
+\contentsline {section}{\numberline {3.1}SafeDE Motivation}{5}{section.29}
+\contentsline {section}{\numberline {3.2}Architecture}{5}{section.30}
+\contentsline {section}{\numberline {3.3}Features and limitations analysis}{5}{section.31}
+\contentsline {section}{\numberline {3.4}N-modular redundancy}{5}{section.32}
+\contentsline {section}{\numberline {3.5}SafeDE Implementantion and Integration}{5}{section.33}
+\contentsline {subsection}{\numberline {3.5.1}De-RISC Platform}{5}{subsection.34}
+\contentsline {subsection}{\numberline {3.5.2}SELENE Platform}{5}{subsection.35}
+\contentsline {subsection}{\numberline {3.5.3}Hardware Integration}{5}{subsection.36}
+\contentsline {subsection}{\numberline {3.5.4}Configuration and Operation}{5}{subsection.37}
+\contentsline {subsection}{\numberline {3.5.5}Software Integration}{5}{subsection.38}
+\contentsline {section}{\numberline {3.6}SafeDE Evaluation}{6}{section.39}
+\contentsline {subsection}{\numberline {3.6.1}Functional Validation}{6}{subsection.40}
+\contentsline {subsection}{\numberline {3.6.2}Fault Injection}{6}{subsection.41}
+\contentsline {subsection}{\numberline {3.6.3}Time Overhead}{6}{subsection.42}
+\contentsline {subsection}{\numberline {3.6.4}Hardware Costs}{6}{subsection.43}
+\contentsline {section}{\numberline {3.7}Conclusions}{6}{section.44}
+\contentsline {chapter}{\numberline {4}Conclusions and Future Work}{7}{chapter.45}
+\contentsline {chapter}{\numberline {A}Published Work}{9}{appendix.46}

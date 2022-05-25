@@ -1,0 +1,55 @@
+\section{Related Work}
+\label{sec:rel}
+
+\begin{table}[t!]
+\centering
+%\setlength{\tabcolsep}{1.0mm}
+\caption{Classification of redundant execution techniques.}
+\label{table:Fault-Tolerant-Classification}
+\begin{tabular}{|c|c|c|l|}
+\hline
+Strategy & Target & Diversity & \multicolumn{1}{c|}{Approaches} \\ \hline
+\multirow{5}{*}{HW} & \multirow{3}{*}{CPU} & Yes (tight) & ~\cite{STlockstep,Iturbe2019,relaxing_criticallity} \\ \cline{3-4}
+ &  & Yes (light) & ~\textbf{Our approach (low staggering)} \\ \cline{3-4}
+ &  & No & ~\cite{Rotenberg1999,SMTredundancy,Mukherjee2002,Gomaa2003,dynamic_coupled_cores,on_demand_redundancy} \\ \cline{2-4}
+ & \multirow{2}{*}{GPU} & Partially & ~\cite{SergiDATE} \\ \cline{3-4}
+ &  & No & ~\cite{instruction_replication_gpu,Jeon2012,Swapcodes,Nathan2015} \\ \hline
+\multirow{4}{*}{SW-Only} & \multirow{3}{*}{CPU} & Yes (light) & ~\cite{SergiDFT} (high staggering)\\ \cline{3-4}
+ &  & \multirow{2}{*}{No} & ~\cite{Haas2017,Shye2007,Scales2010,Reis2005}, \\ %\cline{2-4}
+ &  &    & ~\cite{So2018,Alhakeem2015,Shye2009,Mushtaq2013} \\ \cline{2-4}
+ & \multirow{2}{*}{GPU} & Partially & ~\cite{SergiIOLTS} \\ \cline{3-4}
+ &  & No & ~\cite{softwareapproaches_gpgpureliability,inter-intra-workgroup,Jain2019,Vargas2018} \\ \hline
+\end{tabular}
+\end{table}
+
+
+
+Some solutions to implement redundancy relate to Redundant Multi-Threading in a multi-threaded core~\cite{SMTredundancy,Rotenberg1999}, as well as across different cores~\cite{Mukherjee2002,Gomaa2003,dynamic_coupled_cores}, and even building on partial redundancy~\cite{relaxing_criticallity,on_demand_redundancy}. Unfortunately, none of those solutions guarantees diversity, either by reusing the same hardware inside the core, or by failing to impose any staggering at all. 
+Some software-only solutions for CPUs enforce redundancy by compiler means, building on transactional memory, or creating monitoring threads~\cite{Reis2005,So2018,Haas2017,Mushtaq2013,Shye2007,Shye2009}.
+However, none of those solutions is effective to capture single faults affecting all redundant units (a.k.a. Common Cause Faults, CCFs).
+
+The particular case of GPUs has been addressed to provide redundancy with hardware support~\cite{inter-intra-workgroup,Jeon2012,Swapcodes,Nathan2015} or relying only on software solutions~\cite{softwareapproaches_gpgpureliability,inter-intra-workgroup,Jain2019}, but not providing diversity. Both redundancy and diversity have been achieved in GPUs with~\cite{SergiDATE} and without hardware support~\cite{SergiIOLTS}. Unfortunately, those solutions are GPU specific and cannot be extrapolated to CPUs.
+
+Some designs provide native tight lockstep, such as ST Microelectronics SPC56XL70~\cite{STlockstep} and Infineon AURIX processor family~\cite{infineon_aurix}, which provide DCLS. Analogously, some Arm Cortex-R5 designs extend lockstep to triple-core implementations~\cite{Iturbe2019,paper1}.
+Since errors are only detected when erroneous data is exposed beyond the core sphere, some authors have proposed extensions to shorten error detection time~\cite{TCAD}, and to enhance recovery~\cite{DATEcheckpointing}. 
+In any case, as explained before, tight lockstep makes half of the cores non-visible to the user, thus diminishing flexibility drastically.
+
+Reviriego et al.~\cite{DivDMR} show that, for some dual diverse redundant designs, it is possible perform recovery if the erroneous output can be identified without needing to compare it against a fault-free reference, which allows to tell what of the two diverse redundant designs delivers the correct output.
+
+Flexible diverse redundancy on CPUs has been implemented so far with software-only solutions~\cite{SergiDFT} but, as explained before, staggering imposed is large, which leads to non-negligible performance degradation if tasks duration is short (e.g. between 100$\mu$s and 1ms). 
+Our work aims at leveraging very limited hardware cost to mitigate such limitation of software-only solutions, thus complementing existing solutions (see Table~\ref{table:Fault-Tolerant-Classification}).
+
+
+{\color{magenta}
+%ASIL D compliant ST Microelectronics SPC56XL70~\cite{STlockstep} and Infineon AURIX processor family~\cite{infineon_aurix} implement DCLS, whereas some Arm Cortex-R5 designs implement Triple-Core Lockstep~\cite{Iturbe2019}, but fail to provide enough performance for AD systems~\cite{paper1}.
+%Some improvements shorten time-to-detection for errors~\cite{TCAD} or enhance recovery processes~\cite{DATEcheckpointing}, but do not improve performance.
+
+%Another family of solutions for high-performance CPUs builds upon thread redundancy inside a single core~\cite{SMTredundancy,Rotenberg1999}, or across cores~\cite{Mukherjee2002,Gomaa2003,dynamic_coupled_cores}, even with only partial redundancy~\cite{relaxing_criticallity,on_demand_redundancy}. However, those solutions require hardware support for thread synchronization, and differently to DCLS, do not guarantee diversity.
+%Some SW-only solutions exist for CPUs~\cite{Reis2005,So2018,Haas2017,Mushtaq2013,Shye2007,Shye2009}, introducing redundancy at compiler level, building on transactional memory or creating a monitoring process to check for errors, among other solutions. However, none of them guarantees execution staggering of both redundant threads, so CCFs may cause the same error in both threads, which may lead to a failure.
+
+%Analogous solutions for accelerators (e.g. GPUs or the Kalray MPPA family) have been proposed, either with hardware support~\cite{inter-intra-workgroup,Jeon2012,Swapcodes,Nathan2015} or with software-only support~\cite{softwareapproaches_gpgpureliability,inter-intra-workgroup,Jain2019}, but none of them guarantees diversity. Some preliminary solutions guarantee diversity to some extent for GPUs either with~\cite{SergiIOLTS} or without hardware support~\cite{SergiDATE}.
+
+%However, to the best of our knowledge, no software-only solution guarantees diversity for CPUs, which is the challenge we address in this work, as summarized in Table~\ref{table:Fault-Tolerant-Classification}.
+}
+
+

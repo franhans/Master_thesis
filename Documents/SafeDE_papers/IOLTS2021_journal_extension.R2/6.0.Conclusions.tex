@@ -1,0 +1,7 @@
+\section{Conclusions}
+\label{sec:concl}
+
+
+Safety-related systems must implement diverse redundancy for the highest integrity functionalities to avoid CCFs. Tight lockstepping is the \emph{de facto} solution for CPUs, but it makes half of the cores not visible at user level, so significant performance is lost when none or few high-integrity tasks are run. Light-weight lockstepping has been proposed recently to overcome such limitation and gain flexibility. However, existing solutions build on slow software feedback loops that impose large staggering and require an additional core to run the monitoring process.
+
+This paper introduces SafeDE, a tiny module implementing light-weight lockstepping with a very short feedback loop (e.g., 20 cycles), hence causing negligible performance impact, and not needing any additional core since SafeDE itself controls the feedback loop. Our results show that SafeDE incurs both negligible performance degradation (0.5\% on average) and hardware overheads ($\approx$0.5\% extra SoC area) w.r.t. to a non-redundant industrial SoC, and effectively captures all CCFs that would also be captured by tight lockstep execution.

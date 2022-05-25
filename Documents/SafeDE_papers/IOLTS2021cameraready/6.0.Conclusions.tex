@@ -1,0 +1,8 @@
+\section{Conclusions}
+\label{sec:concl}
+
+Diverse redundancy is a mandatory safety measure for safety-related systems to avoid that a single fault leads the system to a failure. Diverse redundancy is generally implemented by means of tight lockstep computing cores. However, the cost of such an approach is huge due to making half of the cores non-visible for the user, so that they cannot be used for other purposes different to redundancy.
+Some recent work advocates for the use of light-lockstep approaches to complement tight-lockstep ones, therefore gaining flexibility. However, those solutions impose a large staggering between redundant threads, which may have a very large impact in performance for tasks with low duration.
+
+In this paper we present SafeDE, a tiny module supporting light-lockstep in a much more effective manner than software only solutions. Our design has been shown to cause very low performance degradation (typically below 0.5\%) w.r.t. non-redundant execution, and increase hardware costs by far less than 1\% for a commercial space SoC.
+

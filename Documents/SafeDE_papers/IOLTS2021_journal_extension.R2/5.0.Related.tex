@@ -1,0 +1,34 @@
+\section{Related Work}
+\label{sec:rel}
+
+\begin{table}[t!]
+\centering
+\caption{Classification of redundant execution techniques.}
+\label{table:Fault-Tolerant-Classification}
+\begin{tabular}{|c|c|c|l|}
+\hline
+Strategy & Target & Diversity & \multicolumn{1}{c|}{Approaches} \\ \hline
+\multirow{5}{*}{HW} & \multirow{3}{*}{CPU} & Yes (tight) & ~\cite{STlockstep,Iturbe2019,relaxing_criticallity} \\ \cline{3-4}
+ &  & Yes (light) & ~\textbf{Our approach (low staggering)} \\ \cline{3-4}
+ &  & No & ~\cite{Rotenberg1999,SMTredundancy,Mukherjee2002,Gomaa2003,dynamic_coupled_cores,on_demand_redundancy} \\ \cline{2-4}
+ & \multirow{2}{*}{GPU} & Partially & ~\cite{SergiDATE} \\ \cline{3-4}
+ &  & No & ~\cite{instruction_replication_gpu,Jeon2012,Swapcodes,Nathan2015} \\ \hline
+\multirow{4}{*}{SW-Only} & \multirow{3}{*}{CPU} & Yes (light) & ~\cite{SergiDFT} (high staggering)\\ \cline{3-4}
+ &  & \multirow{2}{*}{No} & ~\cite{Haas2017,Shye2007,Scales2010,Reis2005}, \\ %\cline{2-4}
+ &  &    & ~\cite{So2018,Alhakeem2015,Shye2009,Mushtaq2013} \\ \cline{2-4}
+ & \multirow{2}{*}{GPU} & Partially & ~\cite{SergiIOLTS} \\ \cline{3-4}
+ &  & No & ~\cite{softwareapproaches_gpgpureliability,inter-intra-workgroup,Jain2019,Vargas2018} \\ \hline
+\end{tabular}
+\end{table}
+
+Some works investigate redundancy for CPUs, yet without diversity including Redundant Multi-Threading in a core~\cite{SMTredundancy,Rotenberg1999}, across different cores~\cite{Mukherjee2002,Gomaa2003,dynamic_coupled_cores}, and providing only partial redundancy~\cite{relaxing_criticallity,on_demand_redundancy}. Those works lack diversity by reexecuting on the same hardware, or using different cores without staggering.
+Software-only solutions for CPUs build on the compiler to enforce redundancy creating monitoring threads or resorting to transactional memory~\cite{Reis2005,So2018,Haas2017,Mushtaq2013,Shye2007,Shye2009}. Unfortunately, at least CCFs affecting redundant computing units are not covered by those solutions.
+
+Some works targeting GPUs provide hardware support for redundancy~\cite{inter-intra-workgroup,Jeon2012,Swapcodes,Nathan2015} or software-only support~\cite{softwareapproaches_gpgpureliability,inter-intra-workgroup,Jain2019}, but they fail to guarantee diversity. Diverse redundancy on GPUs has been proven doable with~\cite{SergiDATE} and without hardware support~\cite{SergiIOLTS}. Note that those solutions are GPU-specific, so cannot be applied to CPUs.
+
+As discussed before, some processors implement tight lockstep in the form of DMR (Infineon AURIX processor family~\cite{infineon_aurix}, ST Microelectronics SPC56XL70~\cite{STlockstep}), or TMR (Arm Cortex-R5 based designs~\cite{Iturbe2019,paper1}).
+Other works focus on how to expose latent errors to shorten detection time~\cite{TCAD}, and how to enhance error recovery~\cite{DATEcheckpointing}.
+Finally, Reviriego et al.~\cite{DivDMR} focus on how to perform recovery efficiently for DCLS (diverse DMR) designs.
+However, as detailed before, tight lockstepping halves (for DMR) the number of user-visible cores, which impacts flexibility and, ultimately, performance.
+
+Light-weight lockstepping for CPUs has been addressed with software-only solutions so far~\cite{SergiDFT}, but staggering is significant and an additional core is needed to run the monitor. Our solution, SafeDE, drastically reduces staggering and removes the need for an additional core at the expense of introducing a lowly intrusive hardware module. Table~\ref{table:Fault-Tolerant-Classification} summarizes related work and puts SafeDE in context.
