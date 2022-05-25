@@ -1,3 +1,11 @@
 Sergi
 Template
 
+#temporal files
+*.aux
+*.fls
+*.log
+*.out
+*.pdf
+*.toc
+

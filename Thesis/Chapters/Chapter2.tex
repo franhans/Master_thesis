@@ -8,8 +8,30 @@
 %	SECTION 1
 %----------------------------------------------------------------------------------------
 
-\section{Fault, Failures and Errors}
+
+
+
+\section{Faults, Failures and Errors}
+
+During this thesis, the common terminology in fault-tolerant systems \textcolor{red}{add reference} is employed:
+
+Faults, failures and errors are abstract concepts that can be applied to different systems. Since the scope of this work is computing systems, we will restrict the provided examples to this kind of systems.
+
+Any electronic system delivers a service that the user of that system perceives. This service comprises all the external states of the system. A service failure or system failure occurs when the delivered service (i.e. one or more external states) deviates from the correct service state. The correct service is defined by the functional specification of the system. A failure in safety-critical systems can endanger lives or produce high economic losses. Thus, the main goal of safety-critical systems is to minimize the probability of a system failure.
+
+The deviation between the correct internal or external state and the real state is called an error. The cause of an error is called a fault. Thus, a fault is a defect within the system. A fault first causes an error in one of the components that form the system, altering the system's internal state. If this error propagates to the system's output altering the external state and the service provided, we will say that the error led the system to a failure. However, not all faults produce errors and not all the errors reach the external estate of the system producing a failure.  
+
+For instance, consider a two-inputs AND gate inside a system. If one gate input is '1' and the other is '0', the expected output will also be '0'. In this scenario, a fault that flips the input driving the '0' input to a '1' will produce an error because the output of the gate will be '1' instead of '0'. However, if a fault flips the other input from '1' to '0', the output will still be '0', the expected value. 
+
+Following the same logic, an AND gate, whose inputs are driven from two registers, one of them with an incorrect value (error), could correct the error preventing it from spreading to other registers and reaching the output of the system.
+
+Faults can be classified into two main categories: Systematic faults that are related in a deterministic way to a certain cause and are avoidable by construction i.e. taking into account possible faults during the first step of the design or investing enough resources into verification and validation processes (examples....). Random faults that occur unpredictably following a probabilistic distribution and are unavoidable. This work focuses on addressing a method for handling Common Cause Faults (CCF) a especial type of random faults that will be explained later.
+
+
 \section{Safety Related Systems}
+
+
+
 \section{Fault detection}
 \section{Redundancy and Sphere of Replication}
 \section{Diversity}
