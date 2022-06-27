@@ -31,11 +31,141 @@ Faults can be classified into two main categories: Systematic faults that are re
 \section{Safety Related Systems}
 
 
+Safety-critical systems are those systems that need to work properly because otherwise a failure or malfunctioning could put in jeopardy peoples life or health, produce losses in expensive equipment or environmental harm. For this reason, these systems must have mechanisms to lower the failure rates until they happen with a negligible likelyhood. For instance, in the standards of the aircraft industry an acceptable failure rate is \[10^-9\] accdintes per hour \textcolor{red}{reference}
 
-\section{Fault detection}
-\section{Redundancy and Sphere of Replication}
-\section{Diversity}
+Some erros, like systematic errors can be found and corrected during the development process or can be mitigated appliying some qualitative measures depending on the system integrity level SIL [libro?] that is desired. However, random faults could not be avoided and require especial mechanisms to prevent these faults from producing a system failure or at least to minimize the likelyhood of these happening until a reasonable stent.  
+
+Faults also can be classified into permanent, intermitent and transient faults[contanstinescu]. Permanent faults are those ones that produce irreversible physical changes to the hardware. Intermitent faults are those faults that appear in irregular intervals. Transient faults occur because of temporary environmental conditions. 
+
+Transient faults are also called soft errors, these faults alter the normal behaviour of the system momentaneously. Transient faults produce a loss of data but they do not produce any damage to the circuit. They are random by nature and they can appear at any time in some parts of the system causing a deviation from the espected behavior. Several sources of transient faults exists: neutron and alpha particles, power supply variations and interconnect noise, electromagnetic interference and electrostatic discharge. These sources can affect one or several transistors momentanially modifying their behavior. Loss of reliabitlity in digital safety-critical systems is produced mainly by transient faults [citar libro]. 
+
+According to Moore's Law the number of transistors that fits in the same are increase by a factor of two every year. The industry has followed this trend many years and even though the trend is slowing down, transistors are samller every year. Incresing the number of transistors in a system also increases the probability of any of them experience a soft error. But also lower power voltages, higher frequencies and srinking transistors geometries make them more vulnerable to other sources of faults having a negative impact in the system relaivaility. For instance, higher frequencies and smaller interconect features increase the possibility of violatin the timiming sefety margins of the system. Also, lower voltages along with smaller transistors make systems more vulnerable against neutron and alpha particles. [Constantinescu]
+
+Also, with smaller transistors, variations in the manufacturing process (in widths, lenghts, oxide thicknes, etc), are more likely to produce systematic failures in the integrated circuits. 
+
+Safety-critical systems must have the capacity of operate properly even in the presence of faults. The systems that integrate mechanisms to allow a correct operation even when faults appear are called fault-tolerant. Fault-tolerant systems must include two basic mechanisms: fault detection and recovery.
+
+The system has to be equiped with components able to detect the errors and prevent them from propagaiting to other components. When the error is spoted this components alert the system to trigger a recovery mechanism that put the system in a previous error-free state.
+
+When the sytem detects an error it can recover the last known error-free state, reset the system by powering off or enter in a safe state mode for example in the event of a permanent fault. However, detecting when a transient fault is ocurring in our system is not always easy. Reseting the system is not always possible and to recover to the last error-free state requires a mechanism to store those states. 
+
+
+\section{Redundancy} 
+%Transient fault detection via simultaneous multithreading
+%Hardware fault detection usually involves a combination of
+%information redundancy (e.g., ECC, parity, etc.), time redundancy
+%(e.g., executing the same instruction twice in the same functional
+%unit, but at different times), and space redundancy (e.g., executing
+%the same instruction in different functional units). Information
+%redundancy techniques can efficiently detect faults on data that is
+%stored or transmitted, such as in memory or on busses or networks.
+%However, information redundancy techniques for covering control
+%logic and computation units, such as self-checking circuits [12],
+%may be more difficult to design. Time redundancy can more
+%effectively detect faults in computation or control logic, but with a
+%potentially high performance overhead (theoretically, up to 100%).
+%As a result, space redundancy has become a common performance
+%optimization for hardware fault detection
+
+Errors are detected usually employing redundancy. Redundancy is applied differenly for different parts of the system. For instance, Error Correction Codes (ECC) are employed to protect the stored data [reference sefede]. The data is encoded whit rendundant information which allows to detect errors. In the case of the computing elements two different kinds of diversity is employed:
+
+time redundancy
+space redundancy
+
+When time redundancy is applied, the same operation (an instruction or a set of instructions) is executed several times (more than once) in the same processing unit. On the other hand, space redundancy is achieved by replicating several times (more than once) a given processing unit that performs the same operation. In a free-error execution, all the outputs must coincide. Therefore, by comparing the different generated outpus, either by the different executions or in the different processing units, the system is capable of detecting possible errors. 
+
+When the different outputs do not coincide, the system has to activate a recover mechanism to restore the system to a safety state and re-execute from there. This safety state can be a previous free-error state stored in memory or could be achieved by dropping the taks if the time contraints allow it. For instance, a system executing a task with a small period (e.g. every 50 ms) such as braking and steering must perform the task before its Fault Tolerant Time Interval (FTTI) (e.g. 200 ms). In this example, the FTTI is big enough w.r.t the taks period to allow the system to drop the task and execute it all over again as long as two consecutive faults do not take place.
+
+Time redundancy is usuful to proctect agains transien faults since it is very unlikely that a transient fault affect both consecutive executions in the same way, and the free-error execution output and the errouneous output will differ, allowing the comparator to detect the error. However, a premanent fault will cause the same error in both executions making impossible to the comparator to detect the error. On the other hand, space redundancy is more suitable to effectively detect permanent faults since it is likely that a systematic fault affect only one of the replicas of the hardware. 
+
+Space redundancy has a big area penalty becacuse of the replication of processing units, but the performance lost is negligible since all the operations are performed in parallel. On the ohter hand, time redundancy has no area overhead but the performance degradation is high since the same operation has to be performed serveral time secuentially.
+
+Redundancy is based on the idea that the probability that all the replicas produce the same error is near zero. This is true most of the cases since most of the cases faults are independent. However, if the same cause is responsible for different faults in the different replicas, faults are not independent anymore and the preivous assumption is not valid.
+
+
+\section{Sphere of Replication}
+
+The Sphere of Replication (SoR) is the granularity at which the outputs of the replicated elements are compared to detect errors. In figure [] several levels of granularity are illustrated, from the finest granularity (a) to the most coarse one (d). Comparison between stages of the pipeline is not practical due to the huge hardware and performance overhead to perform the communication and the comparison between the stages of the cores each cycle. Instruction granularity can be applied as shown in [15] where the authors propose to execute redundant threads in a superescalar microprocessor with the capacity of executing several threads in different functional units. However, this approach is not extent of drawbacks since especial communication channels are required to perform the comparison at intruction-level granularity. On the ohter hand, a finer granularity means a faster error detection and faster and easier recover mechanisms. 
+
+However, most of the approaches used in the industry rely on a off-core-level SoR. In this case, only the data written to system memory or I/O interface is compared. This approach take advantage of the fact that a task finishes without errors when the service provided (state of the I/O and memory) is correct, and provided that the external states are correct, the internal states (e.g. in-core activity) can be ignored. Also, the overhead is much lower compared to the overhead of intrusction-level SoR. With off-core-level SoR, all the information required to perform the comparisson are the addresses and values sent by the cores through the communication-network. Therefore, snooping the information flowing through the communication-network is enough and the intrusivness of this solution is much lower. However, the time elapsed from a fault occurrence and the error detection is unbound. For instance, an error could be confined to the register file during most of the execution of a program without reachgin the communication-network. These is an issue for safety-critical real-time systems where each task has a strong time constraints.  
+
+
+\section{Dependent failures and Common Cause Fauilures}
+
+Dependent failures are characterized by their ocurrence probability. Whereas the probability of the ocurrence of several failure events produced by indpenedent faults can be computed as the product of all their ocurrence probabilities, the ocurrence probability of dependent failures can not be modelled in the same way. 
+
+
+P (A) · P (B|A) = P (B) · P (A|B) 6 = P (A) · P (B).
+
+Usually the probability of two dependent failures is bigger than the probability of two independent failures caused by independent faults. This issue has to be taken into account since redudancy is based in the assumption that the likelyhood of two replicas experiencing the same failure is virtually zero.
+
+P (A) · P (B|A) > P (A) · P (B)
+
+Concretely, Common Cause Failures CCF is a type of dependent failure that arise simultaneously in redundant elements from a single shared cause. In safety-ciritcal systems implementing space redundancy CCFs may cause the same failure in all the replicas. If this happen, the error detection mechanism will fail since both erroneus outputs will coincide. For this reason, CCFs are a hazard for safety critical systems and all fault tolerant systmes standars take into account the effects of CCFs.
+
+For a CCF to occurs, the systems has to have at least two channels (two replicated elements). A CCF arises when a fault, that is the root case, spreads through a coupling mechamism to all the channels of the system, figure[]. For instance, suppose a fault-tolerant tow-channel system (i.e. two redundant cores in the same die) where the cooling system fails. The root case is the failure of the cooling system. The heat is not disipated anymore and the temperature in the whole die increases. In this example, the thermal coupling becomes the copuling mechanism that is the responsible for the fault cause affecting both channels.
+
+Notice that a CCF can be also caused by both systematic and random faults. For instance a common example is a soft error affecting clock logic of the two cores or a voltage droop. Defects on the design of the hardware of the replicas or in the manufacutring process (e.g. identical phsysically low gates in the replicas) could affect all the channels in the same way producing a CCF.
+
+In figure [bla bla] the most relevant fault coupling mechanisms are shown. 
+
+
+Coupling by similar design or fabrication process: Usually same software and hardware is employed for all of the channels of the system (e.g. all the cores have the same design and the software they execute is also the same). Employing different hardware or software for each channel will daramatically increase the design and test costs. Therefore, a fault in the design or in the manufacuturing process must be prevented during the design process or detected during the testing or it will be missed by the fault-detection mechanism even if redundancy is applied. 
+
+Mechanical and Thermal coupling: The effects of the mechanical and thermal coupling are transmitted slowly over the SoC die compared to the processor operation speed. It is assumed that a CCF can arise only if the effects of the mechanical stress or the heating affect the same gate/transistor of all of the replicas at the same time. However, this is very unlikely due to the slow propagation of these physical effects. The most hazardous scenario would consist on a shor circuit producing a very focus and abrupt temperature increase. This could result in a CCF if the heat source is situated if the affected point present a perfect simetry w.r.t the affected gates/transistors. It is assumed that mechanical stress affects the whole die and therefore it does not represent a CCF risk. 
+
+
+Electromagnetic coupling: Electromagnetic coupling can affect the layout when the pahts of the cores act as antenna for the electromagnetic field. This could result in voltage changes that could produce soft errors in both replicas. If the layout of all the replicas is identical, the effect of the electromagnetic fields is very likely to be similar in all the channels of the system. However, the small dimension of the VLSI works protect them against frequencyes below 100GHz, since the circuit pahts only work as antennas for higher frequencies. PCB traces are much more vulnerable against electromagnetic fields. Therefore, it is high ulikely that electromagnetic fields produce a CCF in a integrated circuit.
+
+
+Electrical coupling: Usually both cores share the power supply and some signals such as the clock. Therefore, a perturbation in the power supply, e.g. voltage droop or noise or a soft error in the clock logic can affect analogously all the replicas of the system. Unlike the mechanical or thermal coupling, electrical coupling affect the whole system concurrently, and therefore, in case of similar effects, a CCF which can not be detected by the comparator unit of the fault detection mechanism will ocurr. Thus, diversity is not enough to prevent system failures when a fault affect the different replicas in the same way and extra measures have to be applied. 
+
+Notice that even though  single event upsets (SEUs) caused by particle radiation are one of the major causes of failures in electric sytems [14], they usually effect a very small area (usually a single register or cell RAM) making very unlikely for them to produce a CCF.   
+
+To protect the system against CCF and be compliant with the safety standars, the redundant elements in the system have to show diversity among them. Diversity be acieved in different ways: 
+
+Design diversity diversity which consist of achieving hardware procuring the same functionality but implemented in a different way. Design diversity can be achieved at different abstracion levels. For instance, the same functionality can be performed with two different architectures, or the same architecture can be implemented employing different gate libraries or a different technology. Design diversity is very effective against preventing transient and systematic faults to cause a CCF since is very unlikely that any fault affect analogously all the replicas of the system. However the cost of implementing two diverse components is associated with a considerable increase in the design costs.
+
+Time diversity is reached ensuring that the redundant software executions in the replicas are staggered i.e the redundant cores are executing always different instructions and thus their internal states are always different. Being the internal states different, a transient fault affecting all the cores analogously will produce different results and thus, the errors will be detected by the fault-detection mechanism. Appliying time diversity imply lower costs and design efforts. However, time diversity is vulnerable against systematic faults that affect analogously all the recplicas.
+
+
+
 \section{Lockstep execution}
-\subsection{Hardware Lockstep Execution}
-\subsection{Software Lockstep Execution}
+
+Lockstep architecture consist of two identical processor implemetantions that execute the same software with some staggering between the cores. Lockstep execution provide a mechanism to detect CCF by implementing diverse redundance in the system. Two different apporaches for achieving a locksteped execution are shown in the next section.
+
+\subsection{Lockstep schemes}
+
+Tight hardware-based lockstep execution: 
+
+%AURIX family [15], uses two physical cores (head and trail
+We can see this approach implemented in the Infineon AURIX family [\textcolor{red}{referencia}. In a hardware-based lockstep implementation two identical instances of the same processor are employed. Both processors execute the same instructions with a small time shift of N cycles (usually 2 or 3 cycles). The output of both processors are compared, introducing redundancy in the system. Also, since both cores have some cycles of staggering by desing, time diversity is introduced in the system protecting it against CCFs. 
+
+Both cores assume a different roll in this technique. The core that goes ahead in the program execution will be the head core while the core that is behind in the execution will be the trail core. As shown in the figure[\textcolor{red}{figura lockstep}], the inputs are the same for both cores although the trail core needs to queue the inputs in a buffer for N cycles. The external requests (data load/store, interrupts, etc) of the head core are stored in a buffer during N cycles until the trail core performs the same requests. Requests of both cores are compared before leaving the core complex. In the event of a mismatch the error is detect and the proper recorer mechanisms can be applied.
+
+As mention before, errors can be only detected once they leave the core complex and are visible at the outputs. Therefore, any fault can go undetected for an arbitrary number of cycles which dependens only in the workload. Some mechanisms can be applied to reduce the error time detection as described in \textcolor{red}{paper jaume}. In this work is proposed to periodically send the file registers values through the system communication network to detect errors before they reach to the ouputs of the cores.
+
+This lockstep implementeation hides its complexity to the user that precives everything as one single processor, easeing the development process. However, for the same reason, the performance of halve since both processors can not be used to execute different non-critical tasks. At the same time, this approach is very intrusive and important hardware modificaitons are required to implement this solution in a couple of cores.
+
+Light-weight software-based lockstep execution: 
+
+%a given program (task) twice on different cores [3]. Those task
+This approach is proposed in \textcolor{red}{referencia 3}. The idea is to create diverse redundancy at software level by running a program twice on different cores. To implement this approach no hardware modifications are needed and thus the intrusiveness of this approach is null in hardware terms and it can be implemented with Commerical off-the-shelf (COTS) products.
+
+In this approach three cores are required: one for monitoring the execution of the critical taks and ensure that the minimum required staggering between the redundant executions is maintained, and two identical cores to perform the redundant execution of the critical task. The monitor core executes the monitor thread which is in charge of schedule the redundant processes in the two different cores and periodically obtain the number of executed intructions by each redundant core (\#instr in the figure). The monitor only allows to the trail core to make progress if staggering (\#instr\_head - \#instr\_trail) is bigger than a given threshold TH\_stag. This condition is checked by the monitor every T\_check cycles. TH\_stag and T have to be selected such as if the trail core execute in T the maximum possible number of instructions while the head core is stalled the staggering still is bigger than zero. Only when the head core finishes the execution of the critical task, the monitor allows to the trial core to run without exercising any controll over it. 
+
+The monitor thread is in charge of keeping a proper staggering between both redundant execution to procure time diversity. However, the monitor do not provide a mechanism to detect faults during the execution. This checking mechanism has to be implemented in software so execution results are compared after task execution is complete.
+
+The core executing the monitor thread is unprotected against CCFs. Therefore, its execution requires a hardware-based lockstepping. The thread monitor is also in charge of handling the inputs and the outputs of the system. Two different readings of an input from the redundant processors at different times could result in different read values which would make the results of the execution differ.  
+
+This apporach achieves a lockstepped execution with a null intrusiveness in hardware terms. However, there is a trade-off between the period T\_check and the minimum staggering allowd TH\_stag. The smaller is the T\_check period the bigger is the computational overhead that the thread monitor experiences. Also, the smaller is the T\_check period, the trail core can execute less number of instructions in that period, and the TH\_stag is smaller. This trade-off is usually resolved choosing a staggering equal to the number of instruction that the core can execute in 100$\mu$s. Therefore, the biggest drawback of this approach is its high staggering.
+
+Notice that with the light-weight approach and namely with the light-weight software-based approach, both cores can execute either the same redundant task when the level of criticallity is high, ensuring a safe execution or two different non-critical tasks. Therefore, this approach doubles the performance when non-critical tasks are executed.
+
+
+
+
+
 \section{Other Fault detection Approaches}
+
+

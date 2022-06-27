@@ -2,6 +2,11 @@
 
 \chapter{SafeDE} % Main chapter title
 
+This section presents the architecture of SafeDE, its features
+and limitations, its extension towards N-modular redundancy,
+and its implementation and integration (both hardware and
+software) details.
+
 \label{Chapter3} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
 
 %----------------------------------------------------------------------------------------
@@ -10,27 +15,146 @@
 
 \section{SafeDE Motivation}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam ultricies lacinia euismod. Nam tempus risus in dolor rhoncus in interdum enim tincidunt. Donec vel nunc neque. In condimentum ullamcorper quam non consequat. Fusce sagittis tempor feugiat. Fusce magna erat, molestie eu convallis ut, tempus sed arcu. Quisque molestie, ante a tincidunt ullamcorper, sapien enim dignissim lacus, in semper nibh erat lobortis purus. Integer dapibus ligula ac risus convallis pellentesque.
-
 
 \section{Architecture}
+
+SafeDE is built on the light-weight lockstepping concept. As expalined in the section \textcolor{red}{referencia sección} this approach has already been implemented in software \textcolor{red}{referencia paper sergi}. However, the implemented software light-ewight lockstep needs a third core running the monitor thread and the frequency at which the monitor is able to retrieve the executed intruction, compute the staggering and apply corrective measures is low. As a consecuence the long feedback loop impose a large staggering. 
+
+SafeDE is a tiny hardare module that monitors the execution of the redundant cores imposing some staggering to reach time diversity.  As shown in image \textcolor{red}{imagen referncia} SafeDE collects every cycle the intructions executed by the two cores (\#instr\_head and \#instr\_trail) and computes the staggering that exists between both cores (instr\_head - instr\_trail). If the head core is not at least TH\_stag instructions ahead of the trail core, SafeDE will raise the trail core stall signal that freezes its pipeline registers (registers keep the same value). The stall signal will be set to zero whenever the head core makes enough progress so the staggerin is again bigger than TH\_stag instructions.
+
+TH\_stag is the minimum staggering (in terms of number of instructions) that SafeDE enforces between both cores. Typically, TH\_stag has a low value. For instance, a value bigger than the pipeline stages can be chosen (e.g. 10 instructions) to ensure that the content of both pipelines is always completele different. Hence, the enforced staggering by SafeDE is much smaller compared to the on enforced by the software approach, and it is comparable to the hardware-based lockstep execution staggering. Since SafeDE is implemented directly on hardware is capable of computing the staggering and stalling any of the cores every cycle overcoming the light-weight lockstepping limitations while maintaining its advantages.
+
+As in the light-weight software-based lockstep execution, a software mechanism has to be implmented to compare the results of the executions once they finish. 
+
+Notice that execution of the redundant critical tasks have to be independet. For that porpuse, each critical task has to be allocated in a different memory space address. SafeDE is controlled by means of internal registers. Each core has to configure SafeDE once it reaches the critical section that needs to be protected. Configuration of SafeDE register is perform using the corresponding driver. An \textcolor{red}{API} is also needed to schedule both redundant processes to the corresponding cores in case that critical task are runing on top of a operative system. Later in the section \textcolor{red}{añadir seccion} these software components are described both in the contex of bare metal and Linux integrations.
+
+Also note, that neither of the cores has predefined the roll of head or trail core. The first core indicating SafeDE that has reached the critical section assumes the head core roll while the other core assumes the trail roll.
+
 \section{Features and limitations analysis}
+
+In this section the main SafeDE limitations and features are presented. They are also compared against the limitations and features of the software-only approach and the tight-lockstep approach.
+
+SafeDE features:
+
+* Low cost: The light-weight software-based lockstep approach needs a third monitor to run the monitor thread. On the contrary, SafeDE is a tiny hardware module that monitors the execution preventing the system from needing a third core. SafeDE implementation require few resources. In a SoC that integrates four RISC-V cores, SafeDE employs only x\% of the FPGA resources of the SoC. A more detailed view of the FPGA resources employed by SafeDE is shown in the section \textcolor{red}{add section}.
+
+* Low staggering: SafeDE checks every cycle the executed instructions by both cores and computes the staggering. Having such a short feedback allows SafeDE to impose very small staggeringns (e.g. few instructions 10-20). On the contrary, as disscussed, the software-only solution needs staggering values of many thousands of instructions.
+
+* Flexibility: SafeDE can be easily enable and disable through its configuration registers. Therefore, SafeDE can be used at very fine granularity. However, the granularity is dictated by \textcolor{red}{duda}
+
+* Low intrusiveness: SafeDE needs a few signals from the cores internal pipeline. First, it needs a signal that indicates SafeDE each time that a new instruction is commited. Second, it needs a signal that provides a mechanism to stall the pipelin of the core when the signal is risen. These modifications are much smaller compared with the modifications that a tight lockstep implementation would require. The software-only implementation does not require any hardware modification, but, unlike SafeDE, it may require modification in the operating system to allow reading the instruction count of the redundant cores from the monitor thread. 
+
+
+
+SafeDE limitations:
+
+* Non-null intrusiveness: Even though the hardware modifications required by SafeDE are light, they are not null, and unlike the software-only solution, SafeDE can not be built with COTS products.
+
+* Limited applicability: Light-weight lockstepping (either software or hardware)  assumes that both redundant executions follow identical instruction streams. Both the hardware and the software-only approach relay on the count of the executed intructions by both cores, if the execution paths diverge, different number of executed instructions would not prevent both cores from exposing the same internal state. This limitation restricts the use of the light-weight lockstepping approach to programs whose control path is deterministic. This restricts SafeDE from being used in applications that make decistions based on random variables and in parallel programs that for instance could differ in the number of executed instructions due to the synchronization primitives. Also, programs performing I/O operations would perform these I/O operations twice at different time instants. These could affect the functionality of the system or two different values could be read causing different results between redundant executions. Note that these limitations apply for light-weight lockstepping and thus they do not apply only to SafeDE but also to the software-only solution.
+
+* Limited diversity: SafeDE allows to force time diversity between two redundant cores forcing a staggered execution. However, even though SafeDE protects the system against some key CCFs, those CCFs whose coupling channel is related to the hardware design or fabrication process (e.g. identical physically weak gates in both cores) will represent a hazard for the system. The system only can be protected against these CCFs appliying other types of diversity such as layout diversity. As mentioned in the section \textcolor{red}{referencia sección}, this kind of diverstiy only can be reached by different hardware designs of applaying different designs at any of the abstraction layers of the ASIC design.
+
+* SafeDE hardening: SafeDE is also suceptible to single faults. For instance, a transient fault could affect SafeDE in such a way that the fault propagates to the ouput leading SafeDE to a failure. If this is the case, both cores could reach the same internal state being vulneable in the event of a CCFs. To preven this situation, SafeDE must be hardened replicating the tight lockstepping scheme shown in Figure \textcolor{red}{add figura}, but substituting the cores with SafeDE.
+
+
+
+Scope of applicability:
+
+As mentioned before, light-weight lockstepping (either hardware or software) has limited applicability (e.g. same instructions streams or no I/O operations). Therefore, two redundant cores coupled by SafeDE can be employed to execute critical code regions rather than entier programs. For instance, a in a multicore system implementing eight cores, two must implement tight hardware-based locksteppping to handle the I/O operations while the rest can be coupled with SafeDE. With this configuration the system is capable of executing several combinations of lockstepped  and non-locksstepped tasks. Variying from 4 critical tasks to 1 critical task and 6 non-critical tasks. Therefore, the user sees 7 cores instead of 4 cores that would see if all the cores were coupled with a tight lockstepping mechanism. This limits the user that only is able to execute four tasks regardless its level of criticallity.
+
+
 \section{N-modular redundancy}
+For this work we have developed, implemented and assessed SafeDE in the context of dual-modular redundancy (DMR). However, SafeDE concept can be easily extended to N-modular redundancy. Some domains (e.g. avionics or medical domains) could require a safety level that is only achieved through 3-modular redundacy or even 5-modular redundancy. 
+
+In order to extend SafeDE functionality to a system needing N-modular redundancy N-1 SafeDE modules are required. For instance, in the case of triple-modular redundancy (TMR), two SafeDE modules would couple the cores 1 and 2 (SafeDE 1-2) and the cores 2 and 3 (SafeDE 2-3). In this escenario, assuming we want core 1 to be ahead in the execution, core 1 must be the first one indicating SafeDE 1 that it has reached the critical section, becoming the head core. The core 2 would be the second one entering the critical section, becoming the trail core w.r.t core 1, and the head core w.r.t the core 3. Finally core 3 would enter the critical section the last, becoming the trail core w.r.t the core 2. This scheme can be extended for  N-modular redundancy, each core i will always exibit a staggering > TH\_staggering w.r.t the core i+1. Note that unlike in DMR, in N-modular redundancy provided N>2, the order in which redundant cores access the critical section must be controlled.  
+
+Figure \textcolor{red}{add reference} shows the concep of flexible N-modular redundancy in a 8-core multicore setup. Seven (N-1) SafeDE modules are developed to pair all the consecutive cores in the system. By activating the appropiate SafeDE modules we can obtain eny possible combination of N-modular redundancy. For instances, as shown in the figure, TMR is implemented in the cores 1-3 while two core couples (4-5 and 7-8) exibit DMR. Finally, core 6 run independently. This is achieved activating a given subset of the implemented SafeDE modules. In Figure \textcolor{red}{referencia} activated SafeDE modules are the blue-colored ones while the inactive ones are the black ones.
+
+
 
 %----------------------------------------------------------------------------------------
 %	SECTION 3
 %----------------------------------------------------------------------------------------
 
+
 \section{SafeDE Implementantion and Integration}
-\subsection{De-RISC Platform}
-\subsection{SELENE Platform}
-\subsection{Hardware Integration}
+
+SafeDE has been implemented and tested in two MultiProcessor 
+
+We have integrated SafeDE in two different multiprocessor platforms based on CAES Gaisler RISC-V NOEL-V cores. In this section both platforms are described and detailed information of the SafeDE hardware implementation and integration is provided. Later, is explained how SafeDE should be configured. Finally, SafeDE software integration is explained both for a bare metal setup and for a platform running Linux.    
+
+\subsection{De-RISC and SELENE Platforms}
+
+\textcolor{red}{citar paper derics}
+
+De-RISC platform: The derisc platform is developed in the scope of a european project motivated by the lack of high performance Multiprocessor System on a chip (MSPSoC) suitable for space applications. Most of the existent platforms do not supply the necessary performance required by spacecrafts, are not reliable enough and do not complaint with the safety requirements for space applications or face export restrictions like the use of propeitary Instruction Set Arquitectures (ISA). 
+
+The project tries to overcome these limitations by adopting multicore processors in the space domain that provide the required performance but face some chanllenges related with space safety regulations, predictability and reliability. To avoid export limitations and propietary ISAs the platform is based on the open source RISC-V ISA. 
+
+As a proof of concept, we have integrated SafeDE in the De-RISC industrial space MPSoC based on CAES Gaisler RISC-V NOEL-V cores. 
+
+%As a proof of concept, we have integrated SafeDE in an
+%industrial space MultiProcessor System on Chip (MPSoC)
+%based on CAES Gaisler RISC-V NOEL-V cores [11]. This
+%platform consists of a consistent set of reusable VHDL IP
+%cores by Gaisler whose main interface is a set of common on-
+%chip buses. Those buses implement the standard AMBA 2.0,
+%and SafeDE has been implemented in VHDL as another IP
+%core compatible with such bus interface.
+%1) System on Chip: SafeDE is integrated and evaluated in
+%a specific MPSoC instance including 2 Gaisler’s NOEL-V 64-
+%bit cores. Those cores are dual-issue, implement the RISC-V
+%Instruction Set Architecture (ISA), include 7 pipeline stages,
+%and local L1 data and instruction caches. Cores are connected
+%among them, and to a shared L2 cache and the memory sub-
+%system through a 128-bit AMBA Advanced High-performance
+%Bus (AHB). Components requiring low bandwidth, such as for
+%instance, SafeDE, are connected instead through an AMBA
+%Advanced Peripheral Bus (APB).
+
+
+\subsection{Hardware Implementation and Integration}
 \subsection{Configuration and Operation}
+
+%active determines whether SafeDE is active. If this signal
+%is reset, SafeDE is completely neutral since it can never
+%stall that trail core.
+%CritSec1 and CritSec2 determine whether the head
+%and trail cores respectively are executing the code region
+%needing lockstep execution.
+%SafeDE operation. While active = 0, SafeDE is inactive.
+%Eventually, T H stag is programmed and active is set, hence
+%activating SafeDE. Activating SafeDE automatically resets
+%CritSec1 and CritSec2 keeping SafeDE ready but innocuous
+%until CritSec2 is activated. Eventually, one of the two cores
+%activates its CritSec register, becomes the head core, and its
+%instruction counter (#instr head ) is reset and starts counting.
+%Whenever the other core sets its CritSec register, it becomes
+%the trail core, and its instruction counter (#instr trail ) is also
+%reset. If the head core is not ahead enough, SafeDE sets the
+%stall signal for the trail core. Note that, since any of the two
+%cores could be the trail core depending on which one sets its
+%CritSec first, the stall signal exists for both cores. Note that,
+%if the staggering is too low when the trail core sets its CritSec
+%(#instr head −#instr trail < T H stag ), the stall signal for the
+%trail core will be raised immediately. Whenever the staggering
+%is enough, the trail core is allowed to resume its execution.
+%Note that the feedback loop to check whether the staggering
+%is enough occurs every cycle. This allows using tiny staggering
+%(T H stag ) values, in constrast with the large staggering needed
+%by the software-only solution. Moreover, SafeDE controls this
+%condition, hence not needing any additional core to run any
+%monitor software. Also note that performing such feedback
+%loop every cycle induces negligible switching power since
+%#instr head and #instr trail barely change. Eventually, the
+%head core reaches the end of its protected code region and
+%resets its CritSec register. At that point, SafeDE becomes
+%innocuous again not raising any stall signal, hence letting the
+%trail core reaching also the end of its protected region.
+
 \subsection{Software Integration}
 %\subsubsection{Bare metal integration}
 %\subsubsection{Linux integration}
-
-Sed ullamcorper quam eu nisl interdum at interdum enim egestas. Aliquam placerat justo sed lectus lobortis ut porta nisl porttitor. Vestibulum mi dolor, lacinia molestie gravida at, tempus vitae ligula. Donec eget quam sapien, in viverra eros. Donec pellentesque justo a massa fringilla non vestibulum metus vestibulum. Vestibulum in orci quis felis tempor lacinia. Vivamus ornare ultrices facilisis. Ut hendrerit volutpat vulputate. Morbi condimentum venenatis augue, id porta ipsum vulputate in. Curabitur luctus tempus justo. Vestibulum risus lectus, adipiscing nec condimentum quis, condimentum nec nisl. Aliquam dictum sagittis velit sed iaculis. Morbi tristique augue sit amet nulla pulvinar id facilisis ligula mollis. Nam elit libero, tincidunt ut aliquam at, molestie in quam. Aenean rhoncus vehicula hendrerit.
 
 
 %-----------------------------------
@@ -43,7 +167,6 @@ Sed ullamcorper quam eu nisl interdum at interdum enim egestas. Aliquam placerat
 \subsection{Time Overhead}
 \subsection{Hardware Costs}
 
-Morbi rutrum odio eget arcu adipiscing sodales. Aenean et purus a est pulvinar pellentesque. Cras in elit neque, quis varius elit. Phasellus fringilla, nibh eu tempus venenatis, dolor elit posuere quam, quis adipiscing urna leo nec orci. Sed nec nulla auctor odio aliquet consequat. Ut nec nulla in ante ullamcorper aliquam at sed dolor. Phasellus fermentum magna in augue gravida cursus. Cras sed pretium lorem. Pellentesque eget ornare odio. Proin accumsan, massa viverra cursus pharetra, ipsum nisi lobortis velit, a malesuada dolor lorem eu neque.
 
 %-----------------------------------
 %	SECTION 5
