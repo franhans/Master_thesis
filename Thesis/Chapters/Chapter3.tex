@@ -91,66 +91,56 @@ De-RISC platform: The derisc platform is developed in the scope of a european pr
 
 The project tries to overcome these limitations by adopting multicore processors in the space domain that provide the required performance but face some chanllenges related with space safety regulations, predictability and reliability. To avoid export limitations and propietary ISAs the platform is based on the open source RISC-V ISA. 
 
-As a proof of concept, we have integrated SafeDE in the De-RISC industrial space MPSoC based on CAES Gaisler RISC-V NOEL-V cores. 
+As a proof of concept, we have integrated SafeDE in the De-RISC industrial space MPSoC based on CAES Gaisler RISC-V NOEL-V cores. This platform is composed of different reusable IP cores developd by CAES Gaisler. Those IP cores are contained in the GRLIB IP library, which is an integrated set or reusable IP cores designed for SoC development. The IP cores have a common on-chip bus interface. SafeDE has been added to the GRLIB IP library as another reusable IP core. The library includes cores for AMBA AHB/APB control. The library is provided under the GNU GPL license.
 
-%As a proof of concept, we have integrated SafeDE in an
-%industrial space MultiProcessor System on Chip (MPSoC)
-%based on CAES Gaisler RISC-V NOEL-V cores [11]. This
-%platform consists of a consistent set of reusable VHDL IP
-%cores by Gaisler whose main interface is a set of common on-
-%chip buses. Those buses implement the standard AMBA 2.0,
-%and SafeDE has been implemented in VHDL as another IP
-%core compatible with such bus interface.
-%1) System on Chip: SafeDE is integrated and evaluated in
-%a specific MPSoC instance including 2 Gaisler’s NOEL-V 64-
-%bit cores. Those cores are dual-issue, implement the RISC-V
-%Instruction Set Architecture (ISA), include 7 pipeline stages,
-%and local L1 data and instruction caches. Cores are connected
-%among them, and to a shared L2 cache and the memory sub-
-%system through a 128-bit AMBA Advanced High-performance
-%Bus (AHB). Components requiring low bandwidth, such as for
-%instance, SafeDE, are connected instead through an AMBA
-%Advanced Peripheral Bus (APB).
+The platform in which SafeDE is integrated and evaluated instanciates 2 Gaisler's NOEL-V 64-bit cores. NOEL-V cores implement the RISC-V ISA, they are dual-issue, and implement a 7-stages pipeline. Both cores have a private L1 data and instructions caches. The IP cores are centered around several AMBA AHB and APB busese. Cores are connected to the L2 cache and other peripherals through a 128-bit AMBA Advanced High-performance BUS (AHB). A 32-bit low-bandhwidth Advanced Peripheral Bus (APB) is instanciated for components requiring low bandwidth and is connected to the main AHB Bus through a AHB/APB bridge. The L2 cache is shared for all of the cores and it connected to the Memory controller through another 128-bit AHB bus.
 
+
+
+SELENE platform: SELENE is another European project that focuses on developing a High-Performance Computing (HPC) Multicore platform which is capable of delivering the computitation capabilities needed by autonomous systems in safety-critical domains such as space, avionics, robotics and factory automation. HPC platforms impose some difficulties when being certified for safety-critical systems due including support for functional and timing isolation, as well as testability. The project tries to overcome these limitations developing a open-source Safety-critical Cognitive Computing
+Platform (CCP) with self-awareness, self-adapting, and autonomous capabilities. 
+
+SELENE computing platform builds upon a combination of a multicore and accelerators, that will be prototyped on a FPGA SoC, so that they can be extended and upgraded. SELENE platform is also developed using the IP CORES from GRLIB IP CAES Gaisler and other GPL IP cores developed by project partners. SafeDE is one of the IP cores envised to be integrated in the SELENE platform to be constraint with the certification requirements for the different safety-critical domains.  
+
+SELENE platform is very similar to the De-RISC platform since the basic IP cores used to build the platform are implemented from the GRLIB IP library. However, SELENE platform offers more complexity since it instanciates more NOEL-V cores and shared L2 cache interconnects with a Network on a Chip including several Artificial Intelligence (AI) accelerators.
+
+Although, results and conclusions of this work come from the experiments perfromed in the De-RISC platform, it is not integrated in the official version of the De-RISC project and the integration was made only as a research exercise. However, SafeDE it is integrated in the SELENE platform as part of the final delivered platform.
 
 \subsection{Hardware Implementation and Integration}
+
+\textcolor{red}{add AMBA protocol in anexex or bibliography}
+Since SafeDE only has to inferface with the system to be configured with its internal registers, it demands low banwidth and for to avoid unnecesary complexity is connected to the system through an APB interface. As shown in figure \textcolor{red}{add reference}, SafeDE is built in three independent hardware layers developed in VHDL. 
+
+* The first layer (the inner one) called "staggering\_handler" instanciates SafeDE's core functionality. This layer is in charge of calculate the instructions executed by each core, compute the staggering and asserting the stall signal when needed. This layer is completely portable since it is compeletely independent of the platform interface. 
+* The second layer implements the APB protocol. Configuration and statitical registers are implemented in this layer. This layers allows to the AHB masters (mainly cores) to modify SafeDE internal registers. The values stored in the internal registers act as inputs for the staggering\_handler layer.
+* Finally the outter layer is an AMBA APB wrapper. This wrapper converts the defined APB AMBA types from the GRLIB IP library to standard VHDL types. In this way, the first two layers are completely portable for any platform implementing APB interface.
+
+%Hablar de las señales de entrada y de las modificaciones en la pipeline
+As mentioned previously, SafeDE needs an internal signal from the pipeline of the cores that provides information about how many instructions each core has executed. SafeDE also needs a signal capable of stalling the cores, to stop their progress whenever the staggering is smaller than the set threshold. 
+
+To provide the information related to the executed instructions, we employed a 2-bit signal "inst\_cnt" from the pipeline. Each of the bits of the signal provides information of each issue of the core. Whenever the issue commits one instruction, the corresponding bit is set to '1' during one cycle. Each core is modified so this signals are fed to SafeDE as an input. With these signals, SafeDE can compute the executed instructions by both cores from a given time instant. Although the De-RISC and the SELENE platforms implement dual-issue NOEL-V cores, SafeDE can be configured through a generic to work with cores with an arbitrary number of issues. 
+
+To stall the pipelines, the output stall signals from SafeDE and ORed with a signal driven in the caches controller. This signal is fed to the pipeline as an input and whenever is risen, it prevents the values in the registers of the pipeline to update. Therefore, when the stall signal is risen, all the activity in the pipelin is stoped until the signal is set to '0'.
+
+Although it is not strictly needed to protect against CCFs, SafeDE also can be configured to set a maximum staggering threshold TH\_stag\_max. Whenever the staggering between both cores is bigger or equal than the configured threshold (\#instr\_head - \#instr\_trail >= TH\_stag\_max) , the head core is stalled. This is useful to reduce the error detection time when intermedate results of the execution are compared between both cores.
+
+The figure \textcolor{red}{add reference} shows an image of the De-RISC platform with SafeDE controlling the staggering of both cores. As shown in the figure \textcolor{red}{add reference}, SafeDE has 3 32-bit configuration registers (Configuration, CritSec1 and CritSec2) plus several statistic registers to gather execution information.
+
+The bit 31 of the configuration register is used to perform a reset. When this bit is set to 1, all the SafeDE registers are set to their initial value except for the configuration register that keeps it value except for the bit 31 which is set to '0' again. The bit 30 of the configuration register is anded to the output stall signals. Thus, SafeDE is totally neutral and uncapable of perfoming any action over the pipeline if this bit is not set to '1'. The rest 30 bits are used to configure a maximum and a minimum thresholds for the staggering (15 bits each). Whenever the staggering is bigger or equal than the maximum threshold or smaller or equal than the minimum threshold, the trail or head core will be stalled in order to keep the staggering within the stablished limits.  
+
+The first bit of the register CritSec1 should be set to '1' when the core 1 enters in the code region needing lockstepped execution.  From the moment in which this bit is set to '1', SafeDE will start counting the instruction executed by the core 1. Anlogously, the core 2 will set the first bit of the register CritSec2. The count of executed instructions will be reset for both cores once the first bit of both CritSec registers are set to '0'. Two separate registers (one for each core) are dedicated to indicate SafeDE the execution start of the region needing proctection. If two different bits of the same register are employed, writes from different cores could override the other core's bit.
+
+SafeDE statistic registers gather information of: total number of cycles SafeDE has been active, number of executed instructions by each core, number of times each core has been stalled during the execution, number of cycles each core has been stalled during the execution and maximum, minimum and average staggering during the execution.
+
+
+\textcolor{red}{talck about the annex for the SafeDE documentation}
+
 \subsection{Configuration and Operation}
 
-%active determines whether SafeDE is active. If this signal
-%is reset, SafeDE is completely neutral since it can never
-%stall that trail core.
-%CritSec1 and CritSec2 determine whether the head
-%and trail cores respectively are executing the code region
-%needing lockstep execution.
-%SafeDE operation. While active = 0, SafeDE is inactive.
-%Eventually, T H stag is programmed and active is set, hence
-%activating SafeDE. Activating SafeDE automatically resets
-%CritSec1 and CritSec2 keeping SafeDE ready but innocuous
-%until CritSec2 is activated. Eventually, one of the two cores
-%activates its CritSec register, becomes the head core, and its
-%instruction counter (#instr head ) is reset and starts counting.
-%Whenever the other core sets its CritSec register, it becomes
-%the trail core, and its instruction counter (#instr trail ) is also
-%reset. If the head core is not ahead enough, SafeDE sets the
-%stall signal for the trail core. Note that, since any of the two
-%cores could be the trail core depending on which one sets its
-%CritSec first, the stall signal exists for both cores. Note that,
-%if the staggering is too low when the trail core sets its CritSec
-%(#instr head −#instr trail < T H stag ), the stall signal for the
-%trail core will be raised immediately. Whenever the staggering
-%is enough, the trail core is allowed to resume its execution.
-%Note that the feedback loop to check whether the staggering
-%is enough occurs every cycle. This allows using tiny staggering
-%(T H stag ) values, in constrast with the large staggering needed
-%by the software-only solution. Moreover, SafeDE controls this
-%condition, hence not needing any additional core to run any
-%monitor software. Also note that performing such feedback
-%loop every cycle induces negligible switching power since
-%#instr head and #instr trail barely change. Eventually, the
-%head core reaches the end of its protected code region and
-%resets its CritSec register. At that point, SafeDE becomes
-%innocuous again not raising any stall signal, hence letting the
-%trail core reaching also the end of its protected region.
+When using SafeDE the first step is to configure the desired staggering thresholds TH\_stag\_max and TH\_stag\_min. In case the TH\_stag\_max is not configured leaving the reset value which is 0, TH\_stag\_max will be internally set close to its maximum possible value (32750). Afeter configuring the staggering thresholds, the next step is to set to '1' the activation bit (bit 32 of the configuration register) otherwise it will not be able to stall the piplines. The first core reaching the code section that needs lockstep protection will set its CritSec register first bit to '1'. From that moment, this core will assume the head roll and SafeDE will start counting each commited instruction. Later, the second core will reach the code region needing protection and it will set again its CritSec register assuming the trail roll. Once both cores have set their CritSec registers, SafeDE will check that the staggering is within the limits (TH\_stag\_min < staggering < TH\_stag\_max) and will stall any of the cores if needed until the previous condition is met.  
+
+Once the head cores has finished the exeuciton, it will set its CritSec register bit to '0'. SafeDE will let the trail core finish the execution without intervention. Once the trail core finishes the execution it will set its CritSec register bit to '0' analogously to the head core. When both CritSec registers first bits have value '0', SafeDE will set the instruction counts of both cores to 0.
+
 
 \subsection{Software Integration}
 %\subsubsection{Bare metal integration}
@@ -162,11 +152,151 @@ As a proof of concept, we have integrated SafeDE in the De-RISC industrial space
 %-----------------------------------
 
 \section{SafeDE Evaluation}
+This section asseses SafeDE by different methods in the context of De-RISC MPSoC. To perform the evalution process we simulated the VHDL model of the MPSoC including SafeDE IP using the simulator QuestaSim. We also synthesized the platform into a Xilinx Kintex UltraScale KCU105 evaluation kit and performed several tests. 
+
 \subsection{Functional Validation}
+
+Several strategies are applied to validate the correct SafeDE functionality:
+
+*Testbench: 
+
+The first approach to validate SafeDE is by means of a VHDL testbench that simulates the behavior of the system generating SafeDE inputs and reacting to its outputs. For that porpuse, a component simulating the behavior of the cores is developed. This component randomly generates the inst\_cnt signals for both cores, randomly setting its bits to '1' as if the cores where committing instructions. If the stall signal of one core is set to '1' this prevents the inst\_cnt signal bits of that core to be set to '1' as it would do in a real core. 
+
+A part from this component, at the top of the testbench, two procedures are define to simulate APB read and write transactions. This allows to configure the internal SafeDE registers during the simulation. As mention before, SafeDE has some statistic register that can be read trhough the APB interface. During the testbench execution, the same statistics are computed at the top of the testbench so they can be compared with the results recover from the APB interface. 
+
+Therefore, the testbench execution starts configuring internal SafeDE registers. After that, the testbench run for a configurable number of cycles simulating two cores executing instructions that hold when the stall signals are risen. Finally, SafeDE is stopped thorugh the configuration registers and the statistics are retreived. The testbench pass provided that the statistics read from SafeDE registers and the statistics computed in the top of the testbench coincide and the staggering keeps all the time between the limits (TH\_max\_stagg > stag > TH\_min\_stag)
+
+The testbench completition is the first step for SafeDE design validation and it also ease the development process since the testbench is automatically run each time a new Git push is performed, informing of potential errors each time the design is modified.
+
+
+*RISC-V ISA tests:
+\textcolor{red}{add reference to isa tests} https://github.com/riscv-software-src/riscv-tests
+
+RISC-V ISA tests are a group of test designed by the Universtity of California to test the correct functioning of the RISC-V ISA instructions. The ISA tests are written in single assembly language file and contain a self-checking code to test the result. Each ISA test tests one operation from the RISC-V ISA forcing corner cases occurrence. 
+
+To load the binaries into the platform, control the execution flow and debugging the application we used GRMON. GRMON is a general debug monitor for the LEON (SPARC V7/V8) processor, NOEL-V (RISC-V) and for SOC designs based on the GRLIB IP library developed by CAES Gaisler. 
+\textcolor{red}{add reference to GRMON} 
+
+We modified the asembly of the RISC-V ISA tests to configure and activate SafeDE prior to the test execution. We also performed some modifictions to allow the exeuction in two different cores. The linker script is modified to load two ISA tests in two different addresse spaces. GRMON is emploed to activate both cores and determine the correct entry point. Once the test has finished, the results are stored into one register file register in each core. Those registers are read using GRMON and it is checked that the test passed. 
+
+This process is automated via Makefiles (for the compilation), Bash scripts and GRMON TCL scripts. Therefore, a simple linux command compiles the binaries, uploads the binaries to the FPGA, controls the exectuion flow and checks the results for all of the selected RISC-V ISA tests. The correct completition of these tests proves that neither the internal modifications performed to the integer pipeline of the cores nor the SafeDE action produce any system malfunctioning.
+
+TACLe Benchmarks:
+TACLe Benchamrks suite is a set of self-contained and open source benchmarks of variying types and sizes. They are specifically designed for the evaluation of cirtical real-time embedded sytems. Since they are self-contained they have their inputs hardcoded together with the source code making them perfect for experimenting in a bare metal setup. Their execution times range from thousand of cycles to a few millions of cycles, making them in many cases easy to simulate and debug to understund unexpected results.
+
+We ported some TACLe Benchmarks to RISC-V ISA and added some C funcion form the bare metal drive to configure SafeDE and gather execution statistics. As with the RISC-V ISA tests TACLe Benchmarks have also a self-checking function that performs a comparison between the obtained results (or any kind of signature summarizing the final result) and the expected results. TACLe Benchmarks are executed over the FPGA loaded with the De-RISC platform. Execution is controlled agian by GRMON. All the compiation, loading and result checking processes are automated using different scripts. 
+
+We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering (TH\_stag\_min = 20; TH\_stag\_max = 32750) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution that the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that the expected one (stag >= TH\_min\_stag = 20). 
+
+Actually, since a 1-cycle latency exists between the moment the stall signal is asserted until the core pipeline stops making progress, the former expresion does not hold during the benchmarks execution. Since the cores are dual-issue they can commit two instructions in one cycle being the worst escenerio the one in which with a existing staggering of 21 instructions, the trail core commits two instruction while the head core commits none. When this happens, the staggering reaches 19 instructions, and trail core stall signal is risen. Since that signal will take effect the next cycle, the trail core can commit another two instructions while the head cores commit again none, leaving the staggering at 17 instructions. The same happens for TH\_max\_stagg. The real minimum staggering that is kept is dependent of the architecture, namely on the number of issues of the core and the number of cycles that elapses from the moment the stall signal is asserted until it stalls the pipeline.  
+
+%si faltan cosas
+%We also find small variations between the exectued instruction by each core that are due to different internal state of the cores when the sto
+
 \subsection{Fault Injection}
+
+
 \subsection{Time Overhead}
+
+
+%We have measured the performance of the TACLeBench in
+%three different scenarios: (1) Isolation, where only one core
+%runs the benchmark; (2) Redundancy without diversity, where
+%two cores run the benchmark without enforcing any staggering;
+%and (3) Redundancy with diversity enforced by SafeDE with
+%T H stag = 20. Such T H stag is set large enough so that both
+%cores cannot hold any common instruction in their pipelines
+%to avoid a case where such instruction causes all the activity
+%and hence, a CCF is possible. Since the pipeline has 7 stages,
+%and each stage can hold up to 2 instructions, any value above
+%14 suffices to guarantee that instructions executed across cores
+%at any time differ.
+%To discount the effect of effects such as DRAM refreshes
+%and other minor performance variations, we run each bench-
+%mark 1,000 times and report average cycle counts. In any case,
+%variations observed are up to few tens of cycles across runs.
+%As shown in Figure 6, performance degrades only by 0.3%
+%on average (up to 1.3% for BITONIC) w.r.t. isolation runs,
+%and 0.003%, so ≈0% (up to 0.6% for IIR) w.r.t. redundancy
+%without diversity. Performance variations across runs, and even
+%marginal performance gains with SafeDE relate to the initial
+%state of the branch predictor, and to memory alignment of the
+%binaries impacting the instruction cache behavior, since in the
+%case of SafeDE we execute additional instructions to configure
+%SafeDE. The relative effect of those variations can be larger
+%for short programs, as it is the case for FAC, with variations
+%in the range of 1%. In fact, those variations have a higher
+%impact than the tiny performance degradation of SafeDE w.r.t.
+%redundancy without diversity.
+%Overall, performance overheads are tiny due the very low
+%staggering threshold needed by SafeDE (20 cycles in our case),
+%which is far lower than that for the software-only solution (e.g.
+%100μs or more) [3].
+
+%To elucidate the impact of SafeDE in terms of computational
+%overhead, we have run the TACLeBench benchmarks in three
+%different scenarios:
+%• Isolation: only one core executes the benchmark and the
+%other core remains idle.
+%• Redundancy without diversity: two different cores execute
+%the same benchmark without any control mechanism.
+%• Redundancy with diversity enforced by SafeDE: SafeDE
+%guarantees that the minimum staggering, T H stag , is never
+%exceeded.
+%In our evaluation, we have set T H stag = 20 for illustration
+%purposes. Note that the lowest value that must be used for
+%the staggering relates to the pipeline depth of the core (7
+%stages in the specific platform used) given that the instructions
+%difference is obtained using committed instructions. Hence,
+%using a pipelined core, it could occur that, by the time
+%staggering is about to fall below the threshold and the trail
+%core stalled (i.e. its commit stage is stalled), the pipeline of
+%the trail core could be executing some common instructions to
+%those of the head core in some of the stages if the staggering
+%is too low. Thus, we have set the threshold to be high enough
+%so that this cannot happen in a pipeline with 7 stages and a
+%pipeline width of 2 instructions.
+%Note that, by using a light-lockstep approach, redundant
+%processes are generated loading binaries twice (one for each
+%core) in different memory segments. We execute each bench-
+%mark 1,000 times and use the average cycle count for each one
+%for our evaluation to discount the effect of small variations
+%due to, for instance, delays caused by DRAM refreshes. In
+%any case, absolute variations observed are always in the order
+%of few tens of cycles.
+%Results are shown in Figure 4. As shown, in all the cases,
+%the execution time overhead with SafeDE w.r.t. the execution
+%time in isolation and in two cores without SafeDE is negligible.
+%In particular, SafeDE causes an execution time degradation in
+%most of the cases below 0.5%, and up to 1.3% in one case
+%(BITONIC benchmark) w.r.t. the execution time in isolation.
+%If we compare it against the redundant execution without
+%enforcing diversity, execution time degradation is generally
+%below 0.1% (in some cases performance even marginally
+%improves), and up to 0.6% for IIR benchmark.
+%In some cases, minor performance variations between the
+%isolation and redundant versions of the programs are observed,
+%being those differences neither caused by interference between
+%redundant threads, nor by SafeDE operation itself. Instead,
+%those variations are caused by the initial core state (e.g. branch
+%predictor state), or changes in instruction cache behavior due
+%to changes in the memory alignment of the binaries with and
+%without thread redundancy. In the case of FAC benchmark,
+%since it is a small benchmark (around 700 instructions only),
+%these tiny effects have a visible impact in relative terms
+%(e.g. 1% execution time increase without SafeDE and 0.1%
+%decrease with SafeDE).
+%Overall, as expected, execution time increase can be re-
+%garded as negligible since the staggering threshold can be
+%set very low (20 cycles in our evaluation), thus far below
+%the 100μs, which correspond to many thousands of cycles,
+%imposed by the software-only solution [3].
+
 \subsection{Hardware Costs}
 
+We have employed the Vivado 2018.1 toolchain to syntheize and generate the bistream targeting the Xilinx UlstraScale KCU105 Evaluation Kit featuring the Kintex XCKU040-2FFVA1156E FPGA. SafeDE implementation required 261 LUTs and 417 registers. Those numbers are really low compared with the resources required by each core (approximately 38,000 LUTs and 17,000 registers) or with the hardware resources required by the whole MPSoC (approximately 114,000 LUTs adn 74,000 registers). Thus, SafeDE hardware costs are negligible, namely just 0.23\% of the LUTs and 0.56\% of the registers of the whole MPSoC are employed to implement SafeDE. Hardware overhead could be limited even more by removing the statistics registers which are only useful for debugging porpuses.
+
+\textcolor{red}{add image of the pie maybe?}
 
 %-----------------------------------
 %	SECTION 5
