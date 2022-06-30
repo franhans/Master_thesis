@@ -1,0 +1,67 @@
+\clearpage
+\newpage
+\section{Background and state of the art}
+
+\subsection{Faults, Failures and Errors}
+
+During this thesis, the common terminology in fault-tolerant systems \cite{AlgirdasAvizienis2004} is employed:
+
+Any electronic system delivers a service that the user of that system perceives. This service comprises all the external states of the system. A service \textbf{failure} or \textbf{system failure} occurs when the delivered service (i.e., one or more external states) deviates from the correct service state. The correct service is defined by the functional specification of the system. A failure in safety-critical systems can endanger lives or produce high economic losses. Thus, the main goal of safety-critical systems is to minimize the probability of a system failure.
+
+The deviation between the correct internal or external state and the real state is called an \textbf{error}. The cause of an error is called a fault. Thus, a \textbf{fault} is a defect within the system. A fault first causes an error in one of the components that form the system, altering the system's internal state. If this error propagates to the system's output altering the external state and the service provided, we will say that the error led the system to a failure. However, not all faults produce errors and not all the errors reach the external estate of the system producing a failure.  
+
+For instance, consider a two-inputs AND gate inside a system. If one input of the gate is '1' and the other is '0', the expected output will also be '0'. In this scenario, a fault that flips the logic driving the input with value '0' to a '1' will modify the AND gate output to '1', producing an error. However, if a fault flips the other input from '1' to '0', the output will still be '0', the expected value. 
+
+Following the same logic, an AND gate, whose inputs are driven from two registers, one of them with an incorrect value (error), could correct the error preventing it from spreading to other registers and reaching the output of the system.
+
+Faults can be classified into two main categories: \textbf{Systematic faults} that are related in a deterministic way to a certain cause and are avoidable by construction. These faults can be avoided by taking into account possible faults during the first step of the design or by investing enough resources into verification and validation processes \textcolor{red}{(examples....)}. \textbf{Random faults} that occur unpredictably following a probabilistic distribution and are unavoidable. This work focuses on Common Cause Faults (CCF), a particular type of random faults that will be explained later. \textcolor{red}{(examples....)}
+
+\bigskip
+
+
+\subsection{Safety Related Systems}
+
+Safety-critical systems are those systems that need to work correctly because otherwise, a failure or malfunctioning could jeopardize people's life or health, produce losses in expensive equipment or cause environmental harm. For this reason, these systems must have mechanisms to lower the failure rates until they happen with a negligible likelihood. For instance, in the standards of the aircraft industry, an acceptable failure rate is $10^-9$ accidents per hour \cite{bowen2000ethics}.
+
+Some errors, like systematic errors, can be found and corrected during the development process or mitigated by applying qualitative measures depending on the desired system integrity level SIL \textcolor{red}{citar libro??}. However, random faults could not be avoided and require special mechanisms to prevent these faults from producing a system failure or at least to minimize the likelihood of these happening until a reasonable stent.  
+
+Faults can also be classified into permanent, intermittent and transient faults \cite{constantinescu2003trends}: Permanent faults produce irreversible physical changes to the hardware. Intermittent faults are those faults that appear in irregular intervals. Transient faults occur because of temporary environmental conditions. 
+
+Transient faults are also called soft errors. These faults alter the normal behavior of the system momentaneously. Transient faults produce a loss of data, but they do not produce any physical damage to the circuit. They are random by nature and can appear at any time in some parts of the system, causing a deviation from the expected behavior. Several sources of transient faults exist: neutron and alpha particles, power supply variations and interconnect noise, electromagnetic interference and electrostatic discharge. These sources can affect one or several transistors, momentarily modifying their behavior. Loss of reliability in digital safety-critical systems is produced mainly by transient faults \textcolor{red}{try to add pages to the cite} \cite{enso2003fault}. 
+
+According to Moore's Law, the number of transistors that fit in the same area increase by a factor of two every year. The industry has followed this trend for many years, and even though the trend is slowing down, transistors are smaller every year. Increasing the number of transistors in a system also increases the probability of any of them experiencing a soft error. Besides, lower power voltages, higher frequencies and shrinking transistors geometries make them more vulnerable to other sources of faults. For instance, higher frequencies and smaller interconnect features increase the possibility of violating the timing safety margins of the system. Also, lower voltages along with smaller transistors make systems more vulnerable to neutron and alpha particles \cite{constantinescu2003trends}. Hence, this trend has a negative impact on systems reliability. 
+
+Also, with smaller transistors, variations in the manufacturing process (in widths, lengths, oxide thickness, etc.) are more likely to produce systematic failures in the integrated circuits. 
+
+Safety-critical systems must operate correctly even in the presence of faults. The systems that integrate mechanisms to allow a correct operation even when faults appear are called fault-tolerant. Fault-tolerant systems must include two basic mechanisms: fault detection and recovery.
+
+The system must be equipped with components able to detect the errors and prevent them from propagating to other components. When the error is spotted, these components alert the system to trigger a recovery mechanism that puts the system in a previous error-free state.
+
+When the system detects an error, it can recover the last known error-free state, reset the system by powering off or enter a safe state mode, for example, in the event of a permanent fault. However, detecting a transient fault in our system is not always easy. Resetting the system is not always possible and recovering the last error-free state requires a mechanism to store those states. 
+
+\bigskip
+
+
+
+\subsection{Redundancy}
+
+\textcolor{red}{make a better definition of redundancy in ECC}
+\textcolor{red}{Add an aclaratory image}
+
+Errors are usually detected by employing redundancy. Redundancy is applied differently for different parts of the system. For instance, Error Correction Codes (ECC) is employed to protect the stored data \cite{alcaide2019software}. The data is encoded whit redundant information which allows for detecting errors. In the case of the computing elements, two different kinds of diversity are employed: Time redundancy and space redundancy.
+
+When \textbf{time redundancy} is applied, the same operation (an instruction or a set of instructions) is executed several times (more than once) in the same processing unit. On the other hand, \textbf{space redundancy} is achieved by replicating several times a given processing unit that performs the same operation. This approach is called Dual Modular Redundancy (DMR) \cite{gomaa2003transient}, \cite{lafrieda2007utilizing}, \cite{mukherjee2002detailed} when two core replicas exits on the sytem and Triple Modular Redundancy (TMR) \cite{iturbe2019arm} when the number of replicas is trhee. In a free-error execution, all the outputs must coincide. Therefore, by comparing the different generated outputs, either by the different executions or in the different processing units, the system is capable of detecting possible errors. 
+
+When the different outputs do not coincide, the system has to activate a recovery mechanism to restore the system to a safe state and re-execute from there. This safety state can be a previous free-error state stored in memory or could be achieved by dropping the task if the time constraints allow it. For instance, a system executing a task with a small period (e.g., every 50 ms), such as braking and steering, must perform the task before its Fault Tolerant Time Interval (FTTI) (e.g., 200 ms). In this example, the FTTI is big enough w.r.t the task period to allow the system to drop the task and execute it all over again as long as two consecutive faults do not occur.
+
+Time redundancy is effective against transient faults since it is highly improbable that a transient fault affects two consecutive executions in the same way, and the free-error execution output and the erroneous output will differ, allowing the comparator to detect the error. However, a permanent fault will cause the same error in both executions, making it impossible for the comparator to detect the error. On the other hand, space redundancy is more suitable to effectively detect permanent faults since it is likely that a systematic fault affects only one of the replicas of the hardware. 
+
+Space redundancy has a significant area penalty because of the replication of processing units, but the performance loss is negligible since all the operations are performed in parallel. On the other hand, time redundancy has no area overhead, but the performance degradation is high since the same operation has to be performed several times sequentially.
+
+Redundancy is based on the idea that the probability that all the replicas produce the same error is near zero. This assumption is valid in most of the cases since most of the faults are independent. However, if the same cause is responsible for different faults in the different replicas, faults are not independent anymore and the previous assumption is not valid.
+
+\bigskip
+
+
+\section{Sphere of Replication}
+\bigskip
