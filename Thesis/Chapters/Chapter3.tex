@@ -198,19 +198,24 @@ Actually, since a 1-cycle latency exists between the moment the stall signal is 
 
 \subsection{Time Overhead}
 
+To determine how much SafeDE afects the performance we have run the TACLe Benchmarks in three different scenarios:
 
-%We have measured the performance of the TACLeBench in
-%three different scenarios: (1) Isolation, where only one core
-%runs the benchmark; (2) Redundancy without diversity, where
-%two cores run the benchmark without enforcing any staggering;
-%and (3) Redundancy with diversity enforced by SafeDE with
-%T H stag = 20. Such T H stag is set large enough so that both
-%cores cannot hold any common instruction in their pipelines
-%to avoid a case where such instruction causes all the activity
-%and hence, a CCF is possible. Since the pipeline has 7 stages,
-%and each stage can hold up to 2 instructions, any value above
-%14 suffices to guarantee that instructions executed across cores
-%at any time differ.
+1) Isolation: Only one core executes the benchamrk while the other remains idle.
+2) Redundancy without diversity: Both cores execute the same benchmark without SafeDE enforcing any staggering. 
+3) Diverse Redundancy: Both cores run the same benchmark and SafeDE is active enforcing a staggering of 20 instructions (TH\_stag\_min = 20)
+
+As stated before, is convinient that the staggering is big enough to ensure that pipelines of both cores do not contain the same instruction in any of the pipeline stages at any point of the execution. Taking into account that NOEL-V cores are dual-issue with a 7 stages pipeline (pipelines can execute in parallel 14 instructions), 20 instructions of staggering (17 in practice) will suffice to avoid the two pipelines executing the same instruction. 
+
+
+%Note that, by using a light-lockstep approach, redundant
+%processes are generated loading binaries twice (one for each
+%core) in different memory segments. We execute each bench-
+%mark 1,000 times and use the average cycle count for each one
+%for our evaluation to discount the effect of small variations
+%due to, for instance, delays caused by DRAM refreshes. In
+%any case, absolute variations observed are always in the order
+%of few tens of cycles.
+
 %To discount the effect of effects such as DRAM refreshes
 %and other minor performance variations, we run each bench-
 %mark 1,000 times and report average cycle counts. In any case,
@@ -233,37 +238,8 @@ Actually, since a 1-cycle latency exists between the moment the stall signal is 
 %which is far lower than that for the software-only solution (e.g.
 %100μs or more) [3].
 
-%To elucidate the impact of SafeDE in terms of computational
-%overhead, we have run the TACLeBench benchmarks in three
-%different scenarios:
-%• Isolation: only one core executes the benchmark and the
-%other core remains idle.
-%• Redundancy without diversity: two different cores execute
-%the same benchmark without any control mechanism.
-%• Redundancy with diversity enforced by SafeDE: SafeDE
-%guarantees that the minimum staggering, T H stag , is never
-%exceeded.
-%In our evaluation, we have set T H stag = 20 for illustration
-%purposes. Note that the lowest value that must be used for
-%the staggering relates to the pipeline depth of the core (7
-%stages in the specific platform used) given that the instructions
-%difference is obtained using committed instructions. Hence,
-%using a pipelined core, it could occur that, by the time
-%staggering is about to fall below the threshold and the trail
-%core stalled (i.e. its commit stage is stalled), the pipeline of
-%the trail core could be executing some common instructions to
-%those of the head core in some of the stages if the staggering
-%is too low. Thus, we have set the threshold to be high enough
-%so that this cannot happen in a pipeline with 7 stages and a
-%pipeline width of 2 instructions.
-%Note that, by using a light-lockstep approach, redundant
-%processes are generated loading binaries twice (one for each
-%core) in different memory segments. We execute each bench-
-%mark 1,000 times and use the average cycle count for each one
-%for our evaluation to discount the effect of small variations
-%due to, for instance, delays caused by DRAM refreshes. In
-%any case, absolute variations observed are always in the order
-%of few tens of cycles.
+
+
 %Results are shown in Figure 4. As shown, in all the cases,
 %the execution time overhead with SafeDE w.r.t. the execution
 %time in isolation and in two cores without SafeDE is negligible.
