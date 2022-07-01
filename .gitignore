@@ -8,4 +8,6 @@ Template
 *.out
 *.pdf
 *.toc
+*.swp
+*.gz
 

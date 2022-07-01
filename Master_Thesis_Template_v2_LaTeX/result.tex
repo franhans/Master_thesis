@@ -1,50 +1,51 @@
 \clearpage\section{SafeDE Evaluation}
 
-\textcolor{red}{This section is still pending to ve reviewed: It contains many mistakes for sure}
+This section assesses SafeDE by different methods in the context of De-RISC MPSoC. To perform the evaluation process, we simulated the VHDL model of the MPSoC, including SafeDE IP. For that purpose, we used the simulator QuestaSim. We also synthesized the platform into a Xilinx Kintex UltraScale KCU105 evaluation kit and performed several tests. 
 
-This section asseses SafeDE by different methods in the context of De-RISC MPSoC. To perform the evalution process we simulated the VHDL model of the MPSoC including SafeDE IP using the simulator QuestaSim. We also synthesized the platform into a Xilinx Kintex UltraScale KCU105 evaluation kit and performed several tests. 
+\subsection{Functional Validation}
+
+This section assesses SafeDE by different methods in the context of De-RISC MPSoC. To perform the evaluation process, we simulated the VHDL model of the MPSoC, including SafeDE IP. For that purpose, we used the simulator QuestaSim. We also synthesized the platform into a Xilinx Kintex UltraScale KCU105 evaluation kit and performed several tests. 
 
 \subsection{Functional Validation}
 
 Several strategies are applied to validate the correct SafeDE functionality:
 
-*Testbench: 
+\textbf{Testbench:} The first approach to validating SafeDE is using a VHDL testbench that simulates the system's behavior by generating SafeDE inputs and reacting to its outputs. For that purpose, a component simulating the behavior of the cores is developed. This component generates the inst\_cnt signals for both cores, randomly setting its bits to '1' as if the cores were committing instructions. If the stall signal of one core is set to '1', this prevents the inst\_cnt signal bits of that core from being set to '1' as it would in a real core. 
 
-The first approach to validate SafeDE is by means of a VHDL testbench that simulates the behavior of the system generating SafeDE inputs and reacting to its outputs. For that porpuse, a component simulating the behavior of the cores is developed. This component randomly generates the inst\_cnt signals for both cores, randomly setting its bits to '1' as if the cores where committing instructions. If the stall signal of one core is set to '1' this prevents the inst\_cnt signal bits of that core to be set to '1' as it would do in a real core. 
+In addition to this component,  procedures are defined at the testbench top to simulate APB read and write transactions. These procedures allow configuring the internal SafeDE registers during the simulation. As mentioned before, SafeDE has some statistic registers that can be read through the APB interface. During the testbench execution, the same statistics are computed at the top of the testbench so they can be compared with the results recovered from SafeDE. 
 
-A part from this component, at the top of the testbench, two procedures are define to simulate APB read and write transactions. This allows to configure the internal SafeDE registers during the simulation. As mention before, SafeDE has some statistic register that can be read trhough the APB interface. During the testbench execution, the same statistics are computed at the top of the testbench so they can be compared with the results recover from the APB interface. 
+Therefore, the testbench execution starts configuring internal SafeDE registers. After that, the testbench runs for a configurable number of cycles simulating two cores executing instructions that hold when the stall signals rise. Finally, SafeDE is stopped and the statistics are retrieved. The testbench pass provided that the statistics read from SafeDE registers and the statistics computed at the top of the testbench coincide and the staggering keeps all the time between the limits (TH\_max\_stagg > stag > TH\_min\_stag)
 
-Therefore, the testbench execution starts configuring internal SafeDE registers. After that, the testbench run for a configurable number of cycles simulating two cores executing instructions that hold when the stall signals are risen. Finally, SafeDE is stopped thorugh the configuration registers and the statistics are retreived. The testbench pass provided that the statistics read from SafeDE registers and the statistics computed in the top of the testbench coincide and the staggering keeps all the time between the limits (TH\_max\_stagg > stag > TH\_min\_stag)
-
-The testbench completition is the first step for SafeDE design validation and it also ease the development process since the testbench is automatically run each time a new Git push is performed, informing of potential errors each time the design is modified.
+The testbench completion is the first step for SafeDE design validation and it also eases the development process since the testbench is automatically run each time a new Git push is performed, informing of potential errors each time the design is modified.
 
 
-*RISC-V ISA tests:
-\textcolor{red}{add reference to isa tests} https://github.com/riscv-software-src/riscv-tests
 
-RISC-V ISA tests are a group of test designed by the Universtity of California to test the correct functioning of the RISC-V ISA instructions. The ISA tests are written in single assembly language file and contain a self-checking code to test the result. Each ISA test tests one operation from the RISC-V ISA forcing corner cases occurrence. 
+\textbf{RISC-V ISA tests:} RISC-V ISA tests \cite{ISAtests} are a group of tests designed by the University of California to test the correct functioning of the RISC-V ISA instructions. The ISA tests are written in a single assembly language file and contain a self-checking code to test the result. Each ISA test tests one operation from the RISC-V ISA forcing corner cases. 
 
-To load the binaries into the platform, control the execution flow and debugging the application we used GRMON. GRMON is a general debug monitor for the LEON (SPARC V7/V8) processor, NOEL-V (RISC-V) and for SOC designs based on the GRLIB IP library developed by CAES Gaisler. 
+To load the binaries into the platform, control the execution flow and debug the application, we used GRMON. GRMON is a general debug monitor for the LEON (SPARC V7/V8) processor, NOEL-V (RISC-V) and for SOC designs based on the GRLIB IP library developed by CAES Gaisler. 
 \textcolor{red}{add reference to GRMON} 
 
-We modified the asembly of the RISC-V ISA tests to configure and activate SafeDE prior to the test execution. We also performed some modifictions to allow the exeuction in two different cores. The linker script is modified to load two ISA tests in two different addresse spaces. GRMON is emploed to activate both cores and determine the correct entry point. Once the test has finished, the results are stored into one register file register in each core. Those registers are read using GRMON and it is checked that the test passed. 
+We modified the RISC-V ISA tests assembly code to configure and activate SafeDE prior to the test execution. We also performed some modifications to perform the execution in two different cores. The linker script is modified to load two ISA tests in two different address segments. GRMON is employed to activate both cores and determine the correct entry point. Once the test has finished, the results are stored in one register file register in each core. Those registers are read using GRMON to test that each test successfully passed. 
 
-This process is automated via Makefiles (for the compilation), Bash scripts and GRMON TCL scripts. Therefore, a simple linux command compiles the binaries, uploads the binaries to the FPGA, controls the exectuion flow and checks the results for all of the selected RISC-V ISA tests. The correct completition of these tests proves that neither the internal modifications performed to the integer pipeline of the cores nor the SafeDE action produce any system malfunctioning.
+This process is automated via Makefiles (for the compilation), Bash scripts and GRMON TCL scripts. Therefore, a simple Linux command compiles the binaries, uploads the binaries to the FPGA, controls the execution flow and checks the results for all of the selected RISC-V ISA tests. The correct completion of these tests proves that neither the internal modifications performed to the integer pipeline of the cores nor the SafeDE action produces any system malfunctioning.
 
-TACLe Benchmarks:
-TACLe Benchamrks suite is a set of self-contained and open source benchmarks of variying types and sizes. They are specifically designed for the evaluation of cirtical real-time embedded sytems. Since they are self-contained they have their inputs hardcoded together with the source code making them perfect for experimenting in a bare metal setup. Their execution times range from thousand of cycles to a few millions of cycles, making them in many cases easy to simulate and debug to understund unexpected results.
+\textbf{TACLe Benchmarks:} TACLe Benchmarks suite \cite{falk2016taclebench} is a set of self-contained and open-source benchmarks of varying types and sizes. They are specifically designed for the evaluation of critical real-time embedded systems. Since they are self-contained, they have their inputs hardcoded together with the source code, making them perfect for experimenting in a bare metal setup. Their execution times range from thousand of cycles to a few millions of cycles, making them, in many cases, easy to simulate and debug to understand unexpected results.
 
-We ported some TACLe Benchmarks to RISC-V ISA and added some C funcion form the bare metal drive to configure SafeDE and gather execution statistics. As with the RISC-V ISA tests TACLe Benchmarks have also a self-checking function that performs a comparison between the obtained results (or any kind of signature summarizing the final result) and the expected results. TACLe Benchmarks are executed over the FPGA loaded with the De-RISC platform. Execution is controlled agian by GRMON. All the compiation, loading and result checking processes are automated using different scripts. 
+We ported some TACLe Benchmarks to RISC-V ISA and added some C functions from the bare metal drive to configure SafeDE and gather execution statistics. As with the RISC-V ISA tests, TACLe Benchmarks also have a self-checking function that compares the obtained results (or a signature summarizing the final result) and the expected results. TACLe Benchmarks are executed over the FPGA loaded with the De-RISC platform bitstream. Execution is controlled by GRMON. The compilation, loading and result checking processes are automated using different scripts. 
 
-We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering (TH\_stag\_min = 20; TH\_stag\_max = 32750) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution that the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that the expected one (stag >= TH\_min\_stag = 20). 
+We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering (TH\_stag\_min = 20; TH\_stag\_max = 32750) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution, the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that of the expected one (stag >= TH\_min\_stag = 20). 
 
-Actually, since a 1-cycle latency exists between the moment the stall signal is asserted until the core pipeline stops making progress, the former expresion does not hold during the benchmarks execution. Since the cores are dual-issue they can commit two instructions in one cycle being the worst escenerio the one in which with a existing staggering of 21 instructions, the trail core commits two instruction while the head core commits none. When this happens, the staggering reaches 19 instructions, and trail core stall signal is risen. Since that signal will take effect the next cycle, the trail core can commit another two instructions while the head cores commit again none, leaving the staggering at 17 instructions. The same happens for TH\_max\_stagg. The real minimum staggering that is kept is dependent of the architecture, namely on the number of issues of the core and the number of cycles that elapses from the moment the stall signal is asserted until it stalls the pipeline.  
+Since a 1-cycle latency exists between the moment the stall signal is asserted until the core pipeline stops making progress, the former staggering condition does not hold all the time during the execution of the benchmarks. Since cores are dual-issue, they can commit two instructions each cycle, being the worst scenario the one in which, with a previous 21 instructions staggering, the trail core commits two instructions while the head core commits none. When this happens, the staggering reaches 19 instructions, and trail core stall signal rises. Since that signal will take effect the next cycle, the trail core can commit another two instructions while the head cores commit none again, leaving the staggering at 17 instructions. The same happens for TH\_max\_stagg. The real minimum staggering that is kept is dependent on the architecture, namely on the number of issues of the core and the number of cycles that elapses from the moment the stall signal is asserted until it stalls the pipeline. 
 
-%si faltan cosas
-%We also find small variations between the exectued instruction by each core that are due to different internal state of the cores when the sto
+\bigskip
+
+
 
 \subsection{Fault Injection}
 \textcolor{red}{Put something similar to what is written in the journal}
+\bigskip
+
+
 
 \subsection{Time Overhead}
 
@@ -57,7 +58,6 @@ To determine how much SafeDE afects the performance we have run the TACLe Benchm
 As stated before, is convinient that the staggering is big enough to ensure that pipelines of both cores do not contain the same instruction in any of the pipeline stages at any point of the execution. Taking into account that NOEL-V cores are dual-issue with a 7 stages pipeline (pipelines can execute in parallel 14 instructions), 20 instructions of staggering (17 in practice) will suffice to avoid the two pipelines executing the same instruction. 
 
 
-%Note that, by using a light-lockstep approach, redundant
 %processes are generated loading binaries twice (one for each
 %core) in different memory segments. We execute each bench-
 %mark 1,000 times and use the average cycle count for each one
@@ -117,12 +117,13 @@ As stated before, is convinient that the staggering is big enough to ensure that
 %set very low (20 cycles in our evaluation), thus far below
 %the 100μs, which correspond to many thousands of cycles,
 %imposed by the software-only solution [3].
+\bigskip
 
 \subsection{Hardware Costs}
 
-We have employed the Vivado 2018.1 toolchain to syntheize and generate the bistream targeting the Xilinx UlstraScale KCU105 Evaluation Kit featuring the Kintex XCKU040-2FFVA1156E FPGA. SafeDE implementation required 261 LUTs and 417 registers. Those numbers are really low compared with the resources required by each core (approximately 38,000 LUTs and 17,000 registers) or with the hardware resources required by the whole MPSoC (approximately 114,000 LUTs adn 74,000 registers). Thus, SafeDE hardware costs are negligible, namely just 0.23\% of the LUTs and 0.56\% of the registers of the whole MPSoC are employed to implement SafeDE. Hardware overhead could be limited even more by removing the statistics registers which are only useful for debugging porpuses.
+We have employed the Vivado 2018.1 toolchain to synthesize and generate the bitstream targeting the Xilinx UlstraScale KCU105 Evaluation Kit featuring the Kintex XCKU040-2FFVA1156E FPGA. SafeDE implementation required 261 LUTs and 417 registers. Those numbers are really low compared with the resources required by each core (approximately 38,000 LUTs and 17,000 registers) or with the hardware resources required by the whole MPSoC (approximately 114,000 LUTs and 74,000 registers). Thus, SafeDE hardware costs are negligible. Namely, just 0.23\% of the LUTs and 0.56\% of the registers of the whole MPSoC are employed to implement SafeDE. Hardware overhead could be limited even more by removing the statistics registers which are only useful for debugging porpuses.
 
-\textcolor{red}{add image of the pie maybe?}ubs
+\textcolor{red}{add image of the pie maybe?}
 \bigskip
 
 
