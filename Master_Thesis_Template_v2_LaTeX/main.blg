@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: main.aux
+The style file: unsrt.bst
+Database file #1: bibliography.bib.bib
+Warning--I didn't find a database entry for "enso2003fault"
+You've used 22 entries,
+            1791 wiz_defined-function locations,
+            579 strings with 7787 characters,
+and the built_in function-call counts, 5365 in all, are:
+= -- 481
+> -- 237
+< -- 8
++ -- 89
+- -- 67
+* -- 322
+:= -- 810
+add.period$ -- 70
+call.type$ -- 22
+change.case$ -- 20
+chr.to.int$ -- 0
+cite$ -- 22
+duplicate$ -- 251
+empty$ -- 553
+format.name$ -- 67
+if$ -- 1244
+int.to.chr$ -- 0
+int.to.str$ -- 22
+missing$ -- 19
+newline$ -- 110
+num.names$ -- 22
+pop$ -- 97
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 130
+stack$ -- 0
+substring$ -- 298
+swap$ -- 78
+text.length$ -- 8
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 56
+width$ -- 24
+write$ -- 237
+(There was 1 warning)
