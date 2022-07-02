@@ -6,8 +6,6 @@ This section assesses SafeDE by different methods in the context of De-RISC MPSo
 
 This section assesses SafeDE by different methods in the context of De-RISC MPSoC. To perform the evaluation process, we simulated the VHDL model of the MPSoC, including SafeDE IP. For that purpose, we used the simulator QuestaSim. We also synthesized the platform into a Xilinx Kintex UltraScale KCU105 evaluation kit and performed several tests. 
 
-\subsection{Functional Validation}
-
 Several strategies are applied to validate the correct SafeDE functionality:
 
 \textbf{Testbench:} The first approach to validating SafeDE is using a VHDL testbench that simulates the system's behavior by generating SafeDE inputs and reacting to its outputs. For that purpose, a component simulating the behavior of the cores is developed. This component generates the inst\_cnt signals for both cores, randomly setting its bits to '1' as if the cores were committing instructions. If the stall signal of one core is set to '1', this prevents the inst\_cnt signal bits of that core from being set to '1' as it would in a real core. 
@@ -43,6 +41,145 @@ Since a 1-cycle latency exists between the moment the stall signal is asserted u
 
 \subsection{Fault Injection}
 \textcolor{red}{Put something similar to what is written in the journal}
+
+
+%We have performed a simulation-based fault injection cam-
+%paign to evaluate the CCF detection capabilities of the afore-
+%mentioned platform integrating SafeDE. We have added non-
+%synthesizable logic into the VHDL files of the CAES Gaisler
+%NOEL-V cores to inject faults in four different locations of
+%the pipeline:
+
+%• ALU: The fault is injected in a random bit, of one of the
+%inputs of one of the two ALUs randomly selected (both
+%the input and the ALU).
+%• Late ALU: Analogous to the previous one, but for late
+%ALUs in the pipeline instead of regular ones.
+%• Memory: In the memory stage, the fault is injected in a
+%random bit of the data to be written in the cache.
+%• Write back: In the write back stage, the fault is injected
+%in a random bit in a random write port of the register file.
+
+%In our fault injection campaign, three fault models have been
+%considered: stuck-at-0, stuck-at-1, and bit flip. They set the
+%value of the bit selected for injection to 0, 1 and its logical
+%complementary value respectively. We have enforced the fault
+%during 1 cycle only, but since most of the faults became
+%quickly masked, we have repeated the experiments making
+%faults last 10 cycles instead. In the case of bit flip, we flip the
+%bit and keep such value for 10 cycles regardless of whether
+%the bit is modified.
+
+%Since simulations are slow, we have performed our fault
+%injection campaign in one specific benchmark: FAC. In princi-
+%ple, no CCFs should escape SafeDE itself, and we expected to
+%find only CCFs that cannot be detected by light-weight and/or
+%tight lockstepping, regardless of how this is implemented. As
+%shown next, all those insights are already observed with this
+%benchmark. FAC computes the factorial of several numbers
+%and accumulates their results. The benchmark code is repli-
+%cated in memory and executed in both cores simultaneously
+%with SafeDE active and imposing a minimum staggering of 20
+%instructions. Faults are injected in a cycle selected randomly in
+%the period where both redundant tasks are active, i.e. since the
+%trail core starts until the head core finishes. The fault location,
+%namely ALU, late ALU, memory or write back, is randomly
+%selected. The fault is injected in the same location and cycle
+%in both cores to emulate a CCF 2 .
+
+%We have analyzed the results of each simulation considering
+%the comparison of results with the golden run outputs, memory
+%dump comparison, and monitoring the AHB transmission
+%during the simulation (to check for invalid memory accesses).
+%The possible outcomes considered are based on the cat-
+%egories in [21], which we extend conveniently to consider
+%additional categories relevant for CCFs:
+%• Timeout: The simulation exceeds 90 seconds. Note that
+%the fault-free simulation takes 35 seconds.
+%• Crash: The simulation process is terminated abnormally.
+%• Software detected: Error detected by software com-
+%parison between the results of both cores, including
+%differences across data in memory.
+%• Identical memory SDC: Both executions produce the
+%same memory corruptions (SDC). They are identified in
+%the post-analysis using the memory dumps.
+%• DUE: One of the cores wrote outside its memory limits
+%causing a non recoverable error. It is detected with the
+%AHB transaction monitoring.
+%• Masked: Outputs were identical to the golden run out-
+%puts, including memory dumps and AHB transmissions.
+%• Undetected error: The software comparison did not raise
+%any error but the result is different from the golden run.
+%Note that, only undetected error and identical memory SDC
+%categories correspond to CCFs.
+
+
+
+
+
+%Table I summarizes the fault injection results. For each fault
+%model and fault duration (either 1 or 10 cycles), we performed
+%4,000 simulations. As shown, out of the 24,000 simulations
+%performed, some simulations led to timeout or crash, hence
+%making the error easily detectable. The number of such cases
+%is higher for a larger fault duration. Some other faults led to
+%errors detected by comparing the outputs, including data in
+%memory (SW detected). Some simulations produced errors in
+%memory, but none of those cases had the two memory dumps
+%equal. Hence, identical memory SDC – one of the two CCF
+%categories – is always zero. During the injection campaign, no
+%DUE appeared. Still, some injections that were classified in the
+%timeout, crash or error detected categories also wrote out of
+%their memory limits. Most of the faults injected were masked.
+%This is particularly true if the fault duration is short (1 cycle).
+%Finally, only in six of the simulations the error produced could
+%not be detected by the software comparison. In all occasions,
+%the faults were injected in the write back stage. Since these
+%six experiments would correspond to a CCF despite using
+%lockstepping, we analyze them in detail.
+%The benchmark FAC calculates and accumulates the facto-
+%rials of the numbers from 12 to 0 using recursion. As shown
+%in Figure 5, the assembly code obtained after compilation has
+%three main sections: initialization, an outer loop to accumulate
+%the factorials and an inner loop to derive the factorials. The
+%fault injected (a bit flip) in the head core is applied while
+%the factorial of 8 is being processed in the inner loop. The
+%least significant bit of the second write port of the register
+%file becomes 1 instead of 0, and the value store is erroneous
+%for up to 10 cycles. However, those values are read through
+%a bypass in the inner loop instead of from the register file, so
+%no impact is observed in the inner loop. In the last iteration of
+%the inner loop, the result of the factorial is stored in register
+%a4 (line 8) with an erroneous value (due to the duration of the
+%fault). Later, the register a4 is read as an operand for addw
+%instruction in line 17, which accumulates all the calculated
+%factorials. Therefore, this error is propagated to the output.
+%Particularly, the erroneous result contains one bit flip in the
+%least significant bit with respect to the correct result.
+%In the trail core, the fault is injected while the core is
+%executing the outer loop. The fault affects several instructions,
+%but all the errors except one are masked because they are either
+%overwritten or not read since they are forwarded like in the
+%head core. The error not masked is produced in line 17 when
+%the result of the addition is written back to the a6 register,
+%which stores the accumulation of the factorials. Again, the final
+%value contains one bit flip with respect to the correct output in
+%the least significant bit. Therefore, even though the fault affects
+%both cores differently, in the end, it produces the same bit flip
+%in the accumulated register (a6), which stores the output value.
+%Thus, the software is not capable of detecting the error, not
+%because of a malfunctioning of SafeDE, but because of the
+%semantics of the benchmark FAC. In fact, even if we used
+%tight lockstepping, external core activity would be identical
+%for both cores and no error would be detected.
+%We content that, despite we could produce this apparent
+%CCF in our fault injection campaign, such effect would be
+%very unlikely to occur in practice since both cores have
+%different states when the fault occurs, and this should lead to
+%heterogeneous electric impact, hence causing heterogeneous
+%errors (e.g., affecting only one core, or affecting different bits
+%or locations of both cores).
+
 \bigskip
 
 
@@ -51,72 +188,23 @@ Since a 1-cycle latency exists between the moment the stall signal is asserted u
 
 To determine how much SafeDE afects the performance we have run the TACLe Benchmarks in three different scenarios:
 
-1) Isolation: Only one core executes the benchamrk while the other remains idle.
-2) Redundancy without diversity: Both cores execute the same benchmark without SafeDE enforcing any staggering. 
-3) Diverse Redundancy: Both cores run the same benchmark and SafeDE is active enforcing a staggering of 20 instructions (TH\_stag\_min = 20)
+\begin{enumerate}
+    \item Isolation: Only one core executes the benchamrk while the other remains idle.
+    \item Redundancy without diversity: Both cores execute the same benchmark without SafeDE enforcing any staggering. 
+    \item Diverse Redundancy: Both cores run the same benchmark and SafeDE is active enforcing a staggering of 20 instructions (TH\_stag\_min = 20)
+\end{enumerate}
 
-As stated before, is convinient that the staggering is big enough to ensure that pipelines of both cores do not contain the same instruction in any of the pipeline stages at any point of the execution. Taking into account that NOEL-V cores are dual-issue with a 7 stages pipeline (pipelines can execute in parallel 14 instructions), 20 instructions of staggering (17 in practice) will suffice to avoid the two pipelines executing the same instruction. 
+As stated before, it is convenient to set a staggering big enough to ensure that pipelines of both cores do not contain the same instruction in any of the pipeline stages at any point of the execution. Taking into account that NOEL-V cores are dual-issue with a 7-stages pipeline (pipelines can execute in parallel 14 instructions), 20 instructions of staggering (17 in practice) will suffice to avoid the two pipelines executing any common instruction. 
 
+To generate two redundant processes, the same binary is loaded twice in different memory segments (one for each core). Each benchmark is executed 1,000 times to discard small variations across different executions due to random processes like the effect of the DRAM refresh in the memory latency. Although, the variation observed in the execution time between several executions of the same benchmarks has shown to be very low, in the order of a few tens of cycles.
 
-%processes are generated loading binaries twice (one for each
-%core) in different memory segments. We execute each bench-
-%mark 1,000 times and use the average cycle count for each one
-%for our evaluation to discount the effect of small variations
-%due to, for instance, delays caused by DRAM refreshes. In
-%any case, absolute variations observed are always in the order
-%of few tens of cycles.
+Figure \textcolor{red}{figure reference} shows the results. In the Figure, the execution time for redundancy without diversity and for diverse redundancy are normalized w.r.t the execution time in isolation. Results show that SafeDE computational overhead is really low. Namely, when SafeDE enforce diverse redundancy performance degrades by 0.3\% on average (up to 0.6\% for BITONIC) w.r.t executions in isolation, and 0.003\% (up to 0.6\% for IIR) on average w.r.t redundant executions without diversity. 
 
-%To discount the effect of effects such as DRAM refreshes
-%and other minor performance variations, we run each bench-
-%mark 1,000 times and report average cycle counts. In any case,
-%variations observed are up to few tens of cycles across runs.
-%As shown in Figure 6, performance degrades only by 0.3%
-%on average (up to 1.3% for BITONIC) w.r.t. isolation runs,
-%and 0.003%, so ≈0% (up to 0.6% for IIR) w.r.t. redundancy
-%without diversity. Performance variations across runs, and even
-%marginal performance gains with SafeDE relate to the initial
-%state of the branch predictor, and to memory alignment of the
-%binaries impacting the instruction cache behavior, since in the
-%case of SafeDE we execute additional instructions to configure
-%SafeDE. The relative effect of those variations can be larger
-%for short programs, as it is the case for FAC, with variations
-%in the range of 1%. In fact, those variations have a higher
-%impact than the tiny performance degradation of SafeDE w.r.t.
-%redundancy without diversity.
-%Overall, performance overheads are tiny due the very low
-%staggering threshold needed by SafeDE (20 cycles in our case),
-%which is far lower than that for the software-only solution (e.g.
-%100μs or more) [3].
+Results for Fac benchmark execution show that the execution time with controlled diversity is shorter than the execution time in isolation. To explain this anomalous result, we performed two simulations to compare the isolation run against the diverse redundancy execution. After a close examination, we found that the branch predictor was behaving differently, causing minor variations in both executions. These variations have a more significant impact in relative terms in smaller benchmarks like Fac, which executes only around 700 instructions. 
+
+Summing up, execution time increase with diverse redundancy is negligible. SafeDE allows configuring small staggering thresholds, as we did in our evaluation (20 instructions), which are way below than those allowed by the software-only solution \cite{alcaide2020software}, positioning SafeDE as a much more efficient solution for light-weight lockstepped execution. 
 
 
-
-%Results are shown in Figure 4. As shown, in all the cases,
-%the execution time overhead with SafeDE w.r.t. the execution
-%time in isolation and in two cores without SafeDE is negligible.
-%In particular, SafeDE causes an execution time degradation in
-%most of the cases below 0.5%, and up to 1.3% in one case
-%(BITONIC benchmark) w.r.t. the execution time in isolation.
-%If we compare it against the redundant execution without
-%enforcing diversity, execution time degradation is generally
-%below 0.1% (in some cases performance even marginally
-%improves), and up to 0.6% for IIR benchmark.
-%In some cases, minor performance variations between the
-%isolation and redundant versions of the programs are observed,
-%being those differences neither caused by interference between
-%redundant threads, nor by SafeDE operation itself. Instead,
-%those variations are caused by the initial core state (e.g. branch
-%predictor state), or changes in instruction cache behavior due
-%to changes in the memory alignment of the binaries with and
-%without thread redundancy. In the case of FAC benchmark,
-%since it is a small benchmark (around 700 instructions only),
-%these tiny effects have a visible impact in relative terms
-%(e.g. 1% execution time increase without SafeDE and 0.1%
-%decrease with SafeDE).
-%Overall, as expected, execution time increase can be re-
-%garded as negligible since the staggering threshold can be
-%set very low (20 cycles in our evaluation), thus far below
-%the 100μs, which correspond to many thousands of cycles,
-%imposed by the software-only solution [3].
 \bigskip
 
 \subsection{Hardware Costs}

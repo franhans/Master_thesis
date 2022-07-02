@@ -88,9 +88,6 @@ We have integrated SafeDE in two different multiprocessor platforms based on CAE
 
 
 \subsubsection{De-RISC and SELENE Platforms}
-We have integrated SafeDE in two different multiprocessor platforms based on CAES Gaisler RISC-V NOEL-V cores. This section describes both platforms and provides detailed information on the SafeDE hardware implementation and integration. Later, the SafeDE configuration process is explained. Finally, SafeDE software integration is reviewed both for a bare metal setup and for a platform running Linux.    
-
-\subsection{De-RISC and SELENE Platforms}
 \textcolor{red}{Maybe add an couple of images of the platforms}
 
 
@@ -113,7 +110,7 @@ SELENE platform is very similar to the De-RISC platform since the basic IP cores
 The results and conclusions of this work come from the experiments performed on the De-RISC platform. However, SafeDE is not integrated into the official version of the De-RISC project and the integration was made only as a research exercise. Regarding the SELENE project, SafeDE is one of the safety IP cores integrated into the platform's final version to cover its safety needs.
 \bigskip
 
-\subsection{Hardware Implementation and Integration}
+\subsubsection{Hardware Implementation and Integration}
 \textcolor{red}{Add images}
 
 Since the system only needs to interface with SafeDE to configure it by modifying its internal registers, it demands low bandwidth. Hence, to avoid unnecessary complexity is connected to the system through an APB interface. As shown in Figure \textcolor{red}{add reference}, SafeDE is built in three independent hardware layers developed in VHDL. 
@@ -152,47 +149,23 @@ Once the head core has finished the execution, it will set its CritSec register 
 
 \subsubsection{Software Integration}
 \label{section:software_integration}
-\textcolor{red}{TODO it I have enough time: add information about how Linux works}
+\textcolor{red}{TODO it I have enough time: add information about how Linux works, make it pretty}
 
+We developed the software interface to control SafeDE IP. SafeDE can be employed in two different software environments: In a bare metal setup, where there is no restriction to access the hardware registers directly and a simple C library suffices to handle SafeDE. In a setup with an operating system running on top of it. In this scenario, the operating system is responsible for handling and protecting the hardware and direct hardware access is not granted to the user. Hence, a driver running in the kernel space and an API that performs the communication from the user space to the kernel space are required. Since Linux was ported to the SELENE platform as part of the SELENE project, we developed a driver to procure SafeDE an interface with Linux.
 
-We developed the software interface to control SafeDE IP. SafeDE can be employed in two different software environments: In a bare metal setup, where there is no restriction to access the hardware registers directly and a simple C library suffices to handle SafeDE. In a setup with an operating system running on top of it. In this scenario operating system is responsable for handling and protecting the hardware and direct hardware access is not granted to the user. Hence, a driver running in the kernel space is required along with an API that performs the communication from the user space to the kernel space. Since Linux was ported to the SELENE platfrom during as part of the project, we developed a driver to procure SafeDE an interface with Linux.
+\textbf{Bare metal integration:} To interface with SafeDE in the context of a bare metal setup, we created a simple API consisting of a C library that handles internal SafeDE registers accordingly to perform basic configuration actions. The use of the C library allows the user to control SafeDE without knowing its internal hardware details. The API offers the user functions to reset SafeDE, configure the staggering, enable and disable SafeDE, indicate when each of the cores has reached and has finished the critical section that requires lockstepped execution or retrieve and print the statistics gathered during the execution. 
 
-1) Bare Metal Integratoin: To interface with SafeDE in the context of a bare metal setup, we created a simple API conosisting of a C library that handles internal SafeDE registers accordingly to perform basic configuration actions. The use of the C library allows the user to controll SafeDE withou knwoing its internal hardware details. The API offers the user functions to reset SafeDE, configure the staggering, enable and disable SafeDE, indicate when each of the cores has reached and has finished the section that requires lockstepped execution or retrieve and print the statistics gathered during the execution. 
+\textbf{Linux integration:} As mentioned, Linux does not grant the user permission to handle the hardware directly. To allow the user to access SafeDE hardware, a driver that executes inside of the kernel space is needed. The code inside the kernel space executes in machine mode having total control of the platform. Hence, the driver can directly access the hardware. However, the user and the kernel spaces are separated, i.e., they are allocated in different and isolated memory segments. For that reason, the user also needs a mechanism to allow communication between both spaces. The communication link between both spaces in Linux is the device file, a special file created in the Linux file system during the driver initialization process. In addition to the driver, we developed an API that performs the communication from the user space to the kernel space by writing into the device file. As in the bare metal API, this API offers the user functions to perform the aforementioned SafeDE control and configuration actions. However, instead of writing SafeDE registers directly, the Linux API writes a 64-bit integer value into the device file. The value of the integer encodes the information about the action the user wants to perform and its arguments. The driver reads the integer value from the device file and decodes the information to determine the physical address that should be read or written. Finally, the driver transforms the physical address into the equivalent virtual address and performs the read or write operation.
 
-2) Linux integration: As mentioned, Linux does not grant permission to the user to handle directly the hardware. To allow the user to access SafeDE hardware a driver that executes inside of the kernel space is needed. The code inside the kernel space executes in machine mode having total control of the platform. Hence, the driver can access directly the hardware. However, the user and the kernel spaces are separated, i.e., they are allocated in different and isolated memory segments. For that reason, the user also needs a mechanism to allow the communication between both spaces. The communication link between both spaces in Linux is the device file, a special file created in the Linux file system during the driver initialization process. In addition to the driver, we developed an API that performs the communication from the user space to the kernel space by writting the device file. As in the bare metal API, this API offers to the user functions to perform the aforementioned SafeDE control and configuration actions. However, the Linux API instead of writting SafeDE registers writes a 64-bit integer value into the device file. The value of the integer codifies the information about the action that the user wants to perform and the arguments if the action requires them. The driver, reads this value and decodifies the information, determines the register physical address that should be read or written and converts it to the correspondent virtual address. Finally it performs the read or write operation.
+As stated in section \ref{section:SafeDE_limitations}, one of SafeDE's limitations is that both cores have to execute the same instruction stream. This is a problem in a preemptive operating system such as Linux. Imagine that a process writes its CritSec register, indicating SafeDE to start counting committed instructions. If that process is preempted, SafeDE will continue counting executed instructions as if they were executed by the preempted process. Hence, in this situation, SafeDE would lose track of the real amount of executed instructions and lose control over the staggering. Even deactivating the CritSec register would be ineffective since this should occur immediately not to alter the executed instruction count. To avoid this situation, some measures must be adopted:
 
-As stated before in section \ref{section:SafeDE_limitations}
+\begin{enumerate}
+    \item In Linux, processes have a mask indicating in which subset of the cores can be executed (a.k.a process affinity). When this mask indicates only one core, it is called binding. Our strategy consists of binding the redundant processes to two specific cores and modifying all the other processes (user and kernel processes), so they do not preempt the critical processes.
 
-%As stated before, one of the SafeDE limitations is that both
-%cores have to execute the exact same instructions. However,
-%in a preemptive operating system, a process in the critical
-%region may be preempted. Since the critical region is active,
-%instructions executed in that core would be counted as part
-%of the critical region, hence de-synchronizing staggering in
-%an arbitrary manner. Deactivating the corresponding CritSec
-%register would not be a better solution since it would not occur
-%immediately, hence altering the instruction count anyway, and
-%would lead to the virtual finalization of the lockstep execution.
-%Some guidelines to avoid this situation are as follows:
-%
-%1) In Linux, each process has a mask indicating in which
-%subset of the cores that process can be executed (a.k.a.
-%process affinity). The particular case in which this subset
-%is only one core, is named binding. In our strategy, we
-%bind the two critical processes into two cores and mod-
-%ify all the other processes (including kernel processes)
-%affinity to avoid preemption of the critical processes.
-%2) In order to give the highest priority to the two redundant
-%critical tasks so that they start immediately and unnec-
-%essary stalls do not occur, we must enqueue those tasks
-%into the highest priority queue, which is SCHED FIFO
-%queue. We perform that employing the Linux system call
-%sched setscheduler().
-%Note that, if a real-time operating system (RTOS) for safety-
-%related systems was used instead of Linux (e.g., fentISS’
-%XtratuM, SYSGO’s PikeOS, RTEMS), such problem would
-%not exist and simpler mechanisms related to task scheduling
-%and priority assignment would suffice to guarantee the non-
-%preemptive execution of light-weight lockstepped processes.
+    \item Even if the process' affinity is modified when critical redundant tasks are launched, new processes created after that moment could preempt the redundant tasks. To avoid this situation, we must queue the redundant tasks into the Linux scheduler's highest priority queue, which is SCHED FIFO queue. To perform this action, we employ the Linux system call sched setscheduler().
+\end{enumerate}
+
+Note that the situation would be different if a real-time operating system (RTOS) was used instead of Linux (e.g., fentISS' XtratuM, SYSGO's PikeOS, RTEMS). These operating systems are designed for safety-related systems and offer simpler task scheduling and priority assignment mechanisms. Hence, preemption of redundant tasks could be avoided much more easily. 
+
 
 \bigskip
