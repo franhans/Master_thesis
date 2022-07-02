@@ -42,3 +42,25 @@ The main contributions of this work are as follows:
 \end{itemize}
 
 
+
+\subsection{Requirements and Specifications}
+
+This work aims at developing SafeDE, a hardware module providing support for light-weight diverse redundancy. The requirements for such module are as follows:
+\begin{itemize}
+\item It must allow cores executing redundant tasks have a staggering much lower than that needed by the software-only solution. In general, a staggering in the order of some hundreds (or even few thousands) of cycles would be considered low enough. 
+\begin{itemize}
+\item As we show later in this document, we achieved this goal by setting a staggering of 20 instructions which, in practice, execute in some tens of cycles.
+\end{itemize}
+\item The module can be enabled and disabled by the end user within its applications so that lockstep execution is used only when needed. 
+\begin{itemize}
+\item As we show later in this document, activation and deactivation of the module is achieved by setting/resetting specific registers of the module that can be controlled by the end user from its own applications.
+\end{itemize}
+\item Hardware costs, typically in terms of area, must be low (e.g., below 5\% of the overall SoC).
+\begin{itemize}
+\item As we show later in this document, the cost in the FPGA implementation of the SoC is well below 1\% to make 2 cores operate in lockstep mode. If further cores are incorporated into the SoC, other SafeDE module instances should be added (one per pair of cores). Hence, the relative cost of the SafeDE module is expected to remain quite constant in relative terms with respect to the overall SoC.
+\end{itemize}
+\end{itemize}
+
+
+\subsection{Methods, Procedures and Previous Work}
+
