@@ -31,7 +31,7 @@ This process is automated via Makefiles (for the compilation), Bash scripts and 
 
 We ported some TACLe Benchmarks to RISC-V ISA and added some C functions from the bare metal drive to configure SafeDE and gather execution statistics. As with the RISC-V ISA tests, TACLe Benchmarks also have a self-checking function that compares the obtained results (or a signature summarizing the final result) and the expected results. TACLe Benchmarks are executed over the FPGA loaded with the De-RISC platform bitstream. Execution is controlled by GRMON. The compilation, loading and result checking processes are automated using different scripts. 
 
-We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering (TH\_stag\_min = 20; TH\_stag\_max = 32750) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution, the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that of the expected one (stag >= TH\_min\_stag = 20). 
+We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering ($Min\_TH_{stag}$ = 20; $Max\_TH_{stag}$ = 32750) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution, the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that of the expected one (stag >= TH\_min\_stag = 20). 
 
 Since a 1-cycle latency exists between the moment the stall signal is asserted until the core pipeline stops making progress, the former staggering condition does not hold all the time during the execution of the benchmarks. Since cores are dual-issue, they can commit two instructions each cycle, being the worst scenario the one in which, with a previous 21 instructions staggering, the trail core commits two instructions while the head core commits none. When this happens, the staggering reaches 19 instructions, and trail core stall signal rises. Since that signal will take effect the next cycle, the trail core can commit another two instructions while the head cores commit none again, leaving the staggering at 17 instructions. The same happens for TH\_max\_stagg. The real minimum staggering that is kept is dependent on the architecture, namely on the number of issues of the core and the number of cycles that elapses from the moment the stall signal is asserted until it stalls the pipeline. 
 
@@ -158,6 +158,13 @@ To analyze the simulation results we take advantege of the TACLe Benchmarks rout
 %errors (e.g., affecting only one core, or affecting different bits
 %or locations of both cores).
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/fac_assembly.png}
+    \caption{Excerpt of the assembly code of the benchmark FAC.} 
+    \label{fig:fac_assembly}
+\end{figure}
+
 \bigskip
 
 
@@ -169,14 +176,22 @@ To determine how much SafeDE afects the performance we have run the TACLe Benchm
 \begin{enumerate}
     \item Isolation: Only one core executes the benchamrk while the other remains idle.
     \item Redundancy without diversity: Both cores execute the same benchmark without SafeDE enforcing any staggering. 
-    \item Diverse Redundancy: Both cores run the same benchmark and SafeDE is active enforcing a staggering of 20 instructions (TH\_stag\_min = 20)
+    \item Diverse Redundancy: Both cores run the same benchmark and SafeDE is active enforcing a staggering of 20 instructions ($Min\_TH_{stag}$ = 20)
 \end{enumerate}
 
 As stated before, it is convenient to set a staggering big enough to ensure that pipelines of both cores do not contain the same instruction in any of the pipeline stages at any point of the execution. Taking into account that NOEL-V cores are dual-issue with a 7-stages pipeline (pipelines can execute in parallel 14 instructions), 20 instructions of staggering (17 in practice) will suffice to avoid the two pipelines executing any common instruction. 
 
 To generate two redundant processes, the same binary is loaded twice in different memory segments (one for each core). Each benchmark is executed 1,000 times to discard small variations across different executions due to random processes like the effect of the DRAM refresh in the memory latency. Although, the variation observed in the execution time between several executions of the same benchmarks has shown to be very low, in the order of a few tens of cycles.
 
-Figure \textcolor{red}{figure reference} shows the results. In the Figure, the execution time for redundancy without diversity and for diverse redundancy are normalized w.r.t the execution time in isolation. Results show that SafeDE computational overhead is really low. Namely, when SafeDE enforce diverse redundancy performance degrades by 0.3\% on average (up to 0.6\% for BITONIC) w.r.t executions in isolation, and 0.003\% (up to 0.6\% for IIR) on average w.r.t redundant executions without diversity. 
+Figure \ref{fig:tacle_results} shows the results. In the Figure, the execution time for redundancy without diversity and for diverse redundancy are normalized w.r.t the execution time in isolation. Results show that SafeDE computational overhead is really low. Namely, when SafeDE enforce diverse redundancy performance degrades by 0.3\% on average (up to 0.6\% for BITONIC) w.r.t executions in isolation, and 0.003\% (up to 0.6\% for IIR) on average w.r.t redundant executions without diversity. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=1]{img/tacle_results.png}
+    \caption{Execution time of different TACLeBench benchmakrs normalized w.r.t. their execution time in isolation. Each benchmark is executed 1,000 times.}
+    \label{fig:tacle_results}
+\end{figure}
+
 
 Results for Fac benchmark execution show that the execution time with controlled diversity is shorter than the execution time in isolation. To explain this anomalous result, we performed two simulations to compare the isolation run against the diverse redundancy execution. After a close examination, we found that the branch predictor was behaving differently, causing minor variations in both executions. These variations have a more significant impact in relative terms in smaller benchmarks like Fac, which executes only around 700 instructions. 
 
@@ -190,7 +205,7 @@ Summing up, execution time increase with diverse redundancy is negligible. SafeD
 
 We have employed the Vivado 2018.1 toolchain to synthesize and generate the bitstream targeting the Xilinx UlstraScale KCU105 Evaluation Kit featuring the Kintex XCKU040-2FFVA1156E FPGA. SafeDE implementation required 261 LUTs and 417 registers. Those numbers are really low compared with the resources required by each core (approximately 38,000 LUTs and 17,000 registers) or with the hardware resources required by the whole MPSoC (approximately 114,000 LUTs and 74,000 registers). Thus, SafeDE hardware costs are negligible. Namely, just 0.23\% of the LUTs and 0.56\% of the registers of the whole MPSoC are employed to implement SafeDE. Hardware overhead could be limited even more by removing the statistics registers which are only useful for debugging porpuses.
 
-\textcolor{red}{add image of the pie maybe?}
+
 \bigskip
 
 

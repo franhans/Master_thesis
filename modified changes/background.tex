@@ -21,7 +21,7 @@ Faults can be classified into two main categories: \textbf{Systematic faults} th
 
 \subsection{Safety Related Systems}
 
-Safety-critical systems are those systems that need to work correctly because otherwise, a failure or malfunctioning could jeopardize people's life or health, produce losses in expensive equipment or cause environmental harm. For this reason, these systems must have mechanisms to lower the failure rates until they happen with a negligible likelihood. For instance, in the standards of the aircraft industry, an acceptable failure rate is $10^-9$ accidents per hour \textcolor{red}{arreglar esta cita}\cite{bowen2000ethics}.
+Safety-critical systems are those systems that need to work correctly because otherwise, a failure or malfunctioning could jeopardize people's life or health, produce losses in expensive equipment or cause environmental harm. For this reason, these systems must have mechanisms to lower the failure rates until they happen with a negligible likelihood. For instance, in the standards of the aircraft industry, an acceptable failure rate is $10^-9$ accidents per hour \cite{bowen2000ethics}.
 
 Some errors, like systematic errors, can be found and corrected during the development process or mitigated by applying qualitative measures depending on the desired system integrity level SIL \textcolor{red}{citar libro??}. However, random faults could not be avoided and require special mechanisms to prevent these faults from producing a system failure or at least to minimize the likelihood of these happening until a reasonable stent.  
 
@@ -68,16 +68,10 @@ Redundancy is based on the idea that the probability that all the replicas produ
 
 \textcolor{red}{add image from paper}
 
-The Sphere of Replication (SoR) \cite{hernandez2014live}, is the granularity at which the outputs of the replicated elements are compared to detect errors. In Figure \ref{fig:SoR}, extracted from \cite{hernandez2014live}, several granularity levels are illustrated. They range from the finest granularity (a) to the most coarse one (d). Comparing data between pipeline stages as in (a) is not practical due to the enormous hardware and performance overhead required to perform the comparison each cycle. Instruction granularity can be applied as shown in \cite{reinhardt2000transient}, where the authors propose executing redundant threads in a superscalar microprocessor with the capacity to execute several threads in different functional units. However, this approach is not exempt from drawbacks since special communication channels are required to perform the comparison at instruction-level granularity. On the other hand, a finer granularity means faster error detection and faster and easier recovery mechanisms. 
+The Sphere of Replication (SoR) \cite{hernandez2014live}, is the granularity at which the outputs of the replicated elements are compared to detect errors. In \textcolor{red}{figure []}, several granularity levels are illustrated. They range from the finest granularity (a) to the most coarse one (d). Comparing data between pipeline stages (\textcolor{red}{add sub-image reference} is not practical due to the enormous hardware and performance overhead required to perform the comparison each cycle. Instruction granularity can be applied as shown in \cite{reinhardt2000transient}, where the authors propose executing redundant threads in a superscalar microprocessor with the capacity to execute several threads in different functional units. However, this approach is not exempt from drawbacks since special communication channels are required to perform the comparison at instruction-level granularity. On the other hand, a finer granularity means faster error detection and faster and easier recovery mechanisms. 
 
 However, most of the approaches used in the industry rely on an off-core-level SoR. In this case, only the data written to the system memory or the I/O interface is compared. This approach takes advantage of the fact that a task finishes without errors when the service provided (state of the I/O and memory) is correct, and provided that the external states are correct, the internal states (e.g., in-core activity) can be ignored. Also, the overhead is much lower than the instruction-level SoR overhead. With off-core-level SoR, only the addresses and values sent by the cores through the communication-network are needed to perform the comparison. Hence, snooping the information flowing through the communication-network is enough and the intrusiveness of this solution is much lower. However, the time elapsed from a fault occurrence and the error detection is unbound. For instance, an error could be confined to the register file during most of the program execution time without reaching the communication-network. This is an issue for safety-critical real-time systems where each task has strong time constraints.
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.25]{img/differentSoR.png}
-    \caption{Figure 2.2: Schematics for different SoR granularities \cite{hernandez2014live}}
-    \label{fig:SoR}
-\end{figure}
 \bigskip
 
 
@@ -85,7 +79,6 @@ However, most of the approaches used in the industry rely on an off-core-level S
 
 
 \subsection{Dependent failures and Common Cause Fauilures}
-\label{section:CCFs}
 
 Dependent failures \cite{Tummeltshammer2009} are characterized by their occurrence probability. Whereas the occurrence probability of several failure events produced by independent faults can be computed as the product of all their occurrence probabilities, the occurrence probability of dependent failures can not be modeled in the same way. Hence, the following expression applies to two independent failures A and B, but is not valid if failures A and B are dependent. \[P(A) P(B|A) = P(B) P(A|B) = P(A) P(B)\]
 
@@ -127,47 +120,32 @@ The lockstep architecture implements two identical processors that perform a sta
 
 \subsubsection{Tight hardware-based lockstep execution}
 
-This approach is broadly used. For instance, it is implemented in the Infineon AURIX family \cite{infineon2012aurix}. In a hardware-based lockstep implementation, two identical instances of the same processor are employed (DMR). Figure \ref{fig:HWlockstep} shows a simplified schematic of this approach. Both processors execute the same instructions with a small-time shift of N cycles (usually 2 or 3 cycles). The outputs of both processors are compared by hardware, detecting any possible mismatch between both executions. Also, since both cores have some cycles of staggering by design, the system exhibits time diversity, and hence it is protected against CCFs. 
+This approach is broadly used. For instance, it is implemented in the Infineon AURIX family \cite{infineon2012aurix}. In a hardware-based lockstep implementation, two identical instances of the same processor are employed (DMR). Both processors execute the same instructions with a small-time shift of N cycles (usually 2 or 3 cycles). The outputs of both processors are compared by hardware, detecting any possible mismatch between both executions. Also, since both cores have some cycles of staggering by design, the system exhibits time diversity, and hence it is protected against CCFs. 
 
-Both cores assume a different role in this technique. The core that goes ahead in the program execution will be the head core, while the core that is behind in the execution will be the trail core. As shown in Figure \ref{fig:HWlockstep}, the inputs are the same for both cores, although the trail core needs to queue the inputs in a buffer for N cycles. The head core's external requests (data load/store, interrupts, etc.) are stored in a buffer during N cycles until the trail core performs the same requests. Requests of both cores are compared before leaving the core complex. The error is detected in the event of a mismatch, and the proper recovery mechanisms can be applied.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/HWlockstep.png}
-    \caption{Schematic of the tight hardware-based lockstep}
-    \label{fig:HWlockstep}
-\end{figure}
+Both cores assume a different role in this technique. The core that goes ahead in the program execution will be the head core, while the core that is behind in the execution will be the trail core. As shown in the figure[\textcolor{red}{figura lockstep}], the inputs are the same for both cores, although the trail core needs to queue the inputs in a buffer for N cycles. The head core's external requests (data load/store, interrupts, etc.) are stored in a buffer during N cycles until the trail core performs the same requests. Requests of both cores are compared before leaving the core complex. The error is detected in the event of a mismatch, and the proper recovery mechanisms can be applied.
 
 As mentioned in section \ref{section:SoR}, errors can only be detected once they leave the core complex and are visible at the outputs. Therefore, any fault can go undetected for an arbitrary number of cycles that depends only on the workload. Some mechanisms can be applied to reduce the error time detection as described in \cite{hernandez2014live}. In this work, a mechanism to periodically send the file registers values through the system communication-network to detect errors before they reach the ouputs of the cores is proposed.
 
 This lockstep implementation hides its complexity to the user, who perceives everything as one single processor, easing the development process. However, for the same reason, performance is halved since both processors can not be used to execute different non-critical tasks that do not require lockstepped execution. At the same time, this approach is very intrusive and significant hardware modifications are required to implement this solution in a couple of cores.
 
-\bigskip
-
-
 \subsubsection{Light-weight software-based lockstep execution}
 \label{section:software_light_lockstep}
 
+\textcolor{red}{add figure and revise references to it}
+%a given program (task) twice on different cores [3]. Those tasks
 This approach is proposed in \cite{alcaide2020software}. The idea is to create diverse redundancy at the software level by running a program twice on different cores. To implement this approach, no hardware modifications are needed. Thus, the intrusiveness of this approach is null in hardware terms and can be implemented with Commerical off-the-shelf (COTS) products.
 
-Light-weight software-based lockstep execution requires three cores: one for monitoring the execution of the critical tasks and ensuring that the minimum required staggering between the redundant executions is maintained, and two identical cores to perform the redundant execution of the critical task. Figure \ref{fig:SWlockstep} shows a simplified schematic of the light-weight software-based lockstep hardware implementation. The monitor core executes the monitor thread, which is in charge of scheduling the redundant processes in the two different cores and periodically obtaining the number of executed instructions by each redundant core ($\#instr$ in Figure \ref{fig:SWlockstep}). The monitor only allows the trail core to make progress if staggering is bigger than a given threshold  ($\#instr_{head} - \#instr_{trail} > TH_{stag}$). This condition is checked by the monitor every $T_{check}$ cycles. $TH_{stag}$ and $T_{check}$ have to be selected such as if the trail core executes in $T_{check}$ the maximum possible number of instructions while the head core is stalled, the staggering still is bigger than zero. Only when the head core finishes the execution of the critical task the monitor allows the trail core to run without exercising any control over it. 
+Light-weight software-based lockstep execution requires three cores: one for monitoring the execution of the critical tasks and ensuring that the minimum required staggering between the redundant executions is maintained, and two identical cores to perform the redundant execution of the critical task. The monitor core executes the monitor thread, which is in charge of scheduling the redundant processes in the two different cores and periodically obtaining the number of executed instructions by each redundant core ($\#instr$ in the figure). The monitor only allows the trail core to make progress if staggering ($\#instr\_head - \#instr\_trail$) is bigger than a given threshold $TH\_stag$. This condition is checked by the monitor every $T\_check$ cycles. $TH\_stag$ and $T$ have to be selected such as if the trail core executes in T the maximum possible number of instructions while the head core is stalled, the staggering still is bigger than zero. Only when the head core finishes the execution of the critical task the monitor allows the trail core to run without exercising any control over it. 
 
 The monitor thread is in charge of keeping a proper staggering between both redundant executions to procure time diversity. However, the monitor does not provide a mechanism to detect faults during the execution. This checking mechanism is implemented by software means and when the execution finishes, its results are compared between cores.
 
 The core executing the monitor thread is unprotected against CCFs. Therefore, its execution requires a hardware-based lockstepping. The thread monitor is also in charge of handling the inputs and the outputs of the system. Two input readings from both redundant processors at different times could result in different read values, which would make the execution results differ.  
 
-This approach achieves a lockstepped execution with null intrusiveness in hardware terms. However, there is a trade-off between the period $T_{check}$ and the minimum staggering allowed $TH_{stag}$. The smaller the $T_{check}$ period, the more significant the thread monitor computational overhead. Also, the smaller $T_{check}$ period is, the trail core can execute fewer instructions in that period, and the $TH_{stag}$ is smaller. This trade-off is usually resolved by choosing a staggering equal to the number of instructions the core can execute in 100$\mu$s. Therefore, the biggest drawback of this approach is its high staggering.
+This approach achieves a lockstepped execution with null intrusiveness in hardware terms. However, there is a trade-off between the period T\_check and the minimum staggering allowed $TH\_stag$. The smaller the $T\_check$ period, the more significant the thread monitor computational overhead. Also, the smaller $T\_check$ period is, the trail core can execute fewer instructions in that period, and the $TH\_stag$ is smaller. This trade-off is usually resolved by choosing a staggering equal to the number of instructions the core can execute in 100$\mu$s. Therefore, the biggest drawback of this approach is its high staggering.
 
 Note that with the light-weight approach, both cores can execute the same redundant tasks when the criticality level is high, ensuring a safe execution or two different non-critical tasks when lockstepped execution is not required. In the last case, the light-weight approach doubles the performance.
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[scale=1]{img/SWlockstep.png}
-    \caption{Schematic of the light-weight software-based lockstep}
-    \label{fig:SWlockstep}
-\end{figure}
 
 \bigskip
 
 
-%\subsection{Triple Modular Redundancy???}
+\subsection{Triple Modular Redundancy???}

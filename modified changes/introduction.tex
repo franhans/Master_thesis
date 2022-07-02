@@ -1,0 +1,114 @@
+\clearpage
+\newpage
+\section{Introduction}
+
+{\color{magenta}
+%{An Introduction that clearly states the rationale of the thesis that includes:}
+
+%\begin{enumerate}
+%\item {Statement of purpose (objectives).}
+%\item {Requirements and specifications.}
+%\item {Methods and procedures, citing if this work is a continuation of another project or it uses applications, algorithms, software or hardware previously developed by other authors.}
+%\item {Work plan with tasks, milestones and a Gantt diagram.}
+%\item {Description of the deviations from the initial plan and incidences that may have occurred. }
+%\end{enumerate}
+}
+
+%\bigskip
+
+
+\subsection{Context and Objectives}
+
+High-performance multicores are needed to deliver the increasing performance demands of highly-automated and autonomous systems in automotive, avionics and space, among other domains. However, performance demands come along with safety requirements in those domains, as dictated in corresponding functional safety standards (e.g., ISO26262 in automotive~\cite{ISO26262}).
+One such requirement for high-integrity systems consists of deploying redundancy to detect errors, but avoiding the unacceptable risk (aka unreasonable risk in ISO26262 terminology) of \emph{common cause failures} (CCFs), where a CCF stands for a failure caused by a single fault affecting all redundant components analogously. Note that CCFs relate to the effect, i.e. the failure, not to the source, i.e. the fault. Hence, CCFs could be caused, for instance, by a soft error affecting clock logic of two cores, or by a defect causing voltage sporadic droops. If such a single fault drives the redundant items (e.g. two cores running the same program redundantly) to the same error, so that it cannot be detected by comparing the results of the redundant items, then it is said that such fault induces a CCF.
+
+CCFs are generally mitigated by using diverse redundancy~\cite{ClassicDiversity}, so that, even if a fault affects all redundant components (e.g., a voltage droop), since they have different state, potential errors differ and can be detected. Error correction codes (ECC) for storage, Cyclic Redundancy Coding (CRC) for communications, and lockstepping for computation are the most common solutions~\cite{alcaide2019software}. ECC and CRC build on generating a form of signature of the data protected, being such signature the result of applying some operations on the data. Hence, the signature and data have different length and different values (and hence, are diverse). If a fault, such a voltage droop, when reading, storing or transmitting data causes perturbations that lead to altered values read, written or transmitted, the likelihood of the signature matching the data tends to zero (e.g., chances of matching may easily be $\frac{1}{2^K}$ for $K$-bit signatures), and hence the error is, at least, detected.
+Nevertheless, the focus of this thesis is lockstep execution for computation~\cite{STlockstep,infineon2012aurix,iturbe2019arm,paper1}. 
+
+Lockstep execution (hardware-only) builds upon identical redundant cores running the same software with some staggering -- i.e. the head core runs $N$ cycles ahead of the trail one. Such staggering makes that, at any point in time, the state and activity across redundant cores is dissimilar, and hence, diverse redundancy is attained as long as some staggering holds.
+In lockstep execution, one of the cores effectively sends and receives external signals (e.g., load/store data, interrupts, etc.). The outputs of the other core are just used for comparison for error detection reasons. However, in such a scheme only one core is visible at user level, thus not allowing to use both cores to run independent tasks if lockstep execution is not needed.
+
+A light-weight lockstep execution scheme has been recently proposed to overcome the limitations of regular hardware-only lockstepping~\cite{alcaide2020software}. Such solution builds on software redundancy (i.e., the task is run redundantly from the software layers), and on a software monitor enforcing sufficient staggering between redundant processes. However, due to the slow software monitoring loop, staggering is significant (e.g., 100$\mu$s - 1ms), which imposes a performance loss as significant as such staggering (as opposed to the hardware-only solution whose staggering is few cycles), and requires an additional core to run the monitor periodically.
+
+The objectives of this thesis consist of devising, integrating in an SoC, and evaluating a hardware module that achieves diverse redundancy for computation, but overcoming the main disadvantages of hardware-only lockstep execution and light-weight software-only lockstep execution. 
+%In particular, we aim at designing and evaluating the hardware counterpart of the software-only solution. 
+Therefore, this thesis presents SafeDE, a \underline{D}iversity \underline{E}nforcement hardware module overcoming the limitations of the previous two schemes. In particular, SafeDE implements the light-weight lockstep execution scheme, but with a hardware monitor (SafeDE module) rather than a software module, hence allowing for few-cycles staggering and not needing any additional core to run any monitor software. Moreover, the integration of SafeDE does not require modifying the cores being monitored, hence being a lowly intrusive solution.
+The main contributions of this work are as follows:
+\begin{itemize}
+\item We present SafeDE, the monitoring module to enable lowly-intrusive diverse redundancy with a flexible scheme that can be enabled or disabled at convenience. We further detail how to extend it to arbitrary redundancy (e.g., with 3 or more cores instead of only 2).
+\item We implement it at VHDL in a SoC for the space domain based on CAES Gaisler's NOEL-V cores~\cite{gomez2020risc,SELENEgit}, and provide details on its bare metal and Linux integrations.
+\item We assess SafeDE's performance and area overheads, as well as effectiveness through a fault injection campaign.
+\end{itemize}
+
+
+
+\subsection{Requirements and Specifications}
+
+This work aims at developing SafeDE, a hardware module providing support for light-weight diverse redundancy. The requirements for such module are as follows:
+\begin{itemize}
+\item It must allow cores executing redundant tasks have a staggering much lower than that needed by the software-only solution. In general, a staggering in the order of some hundreds (or even few thousands) of cycles would be considered low enough. 
+\begin{itemize}
+\item As we show later in this document, we achieved this goal by setting a staggering of 20 instructions which, in practice, execute in some tens of cycles.
+\end{itemize}
+\item The module can be enabled and disabled by the end user within its applications so that lockstep execution is used only when needed. 
+\begin{itemize}
+\item As we show later in this document, activation and deactivation of the module is achieved by setting/resetting specific registers of the module that can be controlled by the end user from its own applications.
+\end{itemize}
+\item Hardware costs, typically in terms of area, must be low (e.g., below 5\% of the overall SoC).
+\begin{itemize}
+\item As we show later in this document, the cost in the FPGA implementation of the SoC is well below 1\% to make 2 cores operate in lockstep mode. If further cores are incorporated into the SoC, other SafeDE module instances should be added (one per pair of cores). Hence, the relative cost of the SafeDE module is expected to remain quite constant in relative terms with respect to the overall SoC.
+\end{itemize}
+\end{itemize}
+
+
+\subsection{Methods, Procedures and Previous Work}
+Since the goal was implementing SafeDE in the context of existing SoCs~\cite{gomez2020risc,SELENEgit}, and the software counterpart of SafeDE already existed~\cite{alcaide2020software}, those SoCs and software-only solution shaped the methodology. In particular, the software-only solution determines that the input to the SafeDE module is the instruction count of the cores running tasks redundantly, and the output is a signal capable of stalling one of the cores. The particular SoC, and its specific cores, determine the signals that need being exported from those IPs so that SafeDE can monitor execution progress and stall the corresponding core whenever there is risk of losing diversity.
+
+Since the design has been prototyped in a FPGA, the toolflow used in the project where those SoCs were designed and enhanced has been inherited for this work. 
+
+Finally, for validation purposes, SafeDE has been implemented including a number of debug features capable of counting how many times diversity is lost, how many instructions one core is ahead of the other, and the like. Such information allowed validating the correctness and efficiency of the implementation providing factual evidence of the actual staggering achieved across redundant cores. Tests were conducted with a wide variety of relevant benchmarks on a baremetal setup to validate the implementation.
+
+Regarding previous work, we build on the software-only solution proposed by Alcaide et al.~\cite{alcaide2020software}. Such solution is described in more detail in Section~\ref{section:software_light_lockstep}, but essentially consists of a software monitor (a program) running periodically and reading the instruction count registers of two cores executing a program redundantly. If the staggering among them is regarded as too low, then the monitor send a stall signal to the core behind (trail core), and whenever the other core (head core) is ahead enough, the execution in the trail core is resumed by the monitor. In our case, the monitor is implemented as a hardware module (SafeDE), the monitoring frequency is every cycle, and the staggering needed much lower due to the higher frequency to check the staggering and the almost immediate control to stall the trail core.
+
+
+\subsection{Work Plan and Deviations}
+We had the opportunity of starting this work in the context of a European project well ahead of the time of starting the TFM. Hence, no specific work plan was stablished and execution of the work was based on the same flow used for other components of the SoC, and monitored with weekly meetings plus ad-hoc meetings to discuss unforeseen cases. As a result, the work was complete before the official start of the TFM and published in the two publications indicated in the following subsection, and the only part remaining was the preparation of this document. 
+
+For obvious reasons, since the work was executed timely, no deviation can be claimed to have occurred.
+
+
+\subsection{Publications}
+
+This work has led to the following two publications in especialized peer-reviewed conferences and journals:
+
+\begin{itemize}
+\item 
+Francisco Bas, Sergi Alcaide, Ruben Lorenzo, Guillem Cabo, Guillermo Gil, Oriol Sala, Fabio Mazzocchetti, David Trilla, Jaume Abella.
+\emph{SafeDE: a Flexible Diversity Enforcement Hardware Module for Light-lockstepping}. 
+\textbf{IEEE 27th International Symposium on On-Line Testing and Robust System Design (IOLTS)}, 2021, pp. 1-7, doi: 10.1109/IOLTS52814.2021.9486715.
+
+\item
+Francisco Bas, Sergi Alcaide, Guillem Cabo, Pedro Benedicte, Jaume Abella.
+\emph{SafeDE: A Low-Cost Hardware Solution to Enforce Diverse Redundancy in Multicores}.
+\textbf{IEEE Transactions on Device and Materials Reliability}, vol. 22, no. 2, pp. 111-119, June 2022, doi: 10.1109/TDMR.2022.3156799.
+\end{itemize}
+
+Moreover, we have also developed a complementary module (SafeDM) measuring diversity to allow end users choose whether they want to enforce diverse redundancy at hardware level with SafeDE, or just let software run unconstrainedly and monitor diversity with SafeDM so that, upon loss of diversity, system level measures are taken.
+This other module has been also published (it is not part of this master thesis):
+
+\begin{itemize}
+\item 
+Francisco Bas, Pedro Benedicte, Sergi Alcaide, Guillem Cabo, Fabio Mazzocchetti, Jaume Abella.
+\emph{SafeDM: a Hardware Diversity Monitor for Redundant Execution on Non-Lockstepped Cores}.
+\textbf{IEEE 25th Design, Automation and Test in Europe Conference and Exhibition (DATE)}, 2022, pp. 358-363, \linebreak doi: 10.23919/DATE54114.2022.9774540.
+\end{itemize}
+
+Also, a comparison between the different solutions (SafeDE, software-only and SafeDM) has also been published, yet the paper is still to appear:
+\begin{itemize}
+\item 
+Ramon Canal, Francisco Bas, Sergi Alcaide, Guillem Cabo, Pedro Benedicte, Francisco Fuentes, Feng Chang, Ilham Lasfar, Jaume Abella.
+\emph{SafeDX: Standalone Modules Providing Diverse Redundancy for Safety-Critical Applications}.
+\textbf{22nd International Conference on Embedded Computer Systems: Architectures, Modeling and Simulation (SAMOS)}. Invited to the special session on Reports from research projects - Digital services and platforms: Application areas automotive industry, energy, agriculture, healthcare and industry 4.0 workshop. 2022.
+\end{itemize}
+
+

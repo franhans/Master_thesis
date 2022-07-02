@@ -2,3 +2,8 @@
 \babel@toc {english}{}
 \babel@toc {english}{}
 \babel@toc {english}{}
+\contentsline {figure}{\numberline {1}{\ignorespaces Schematic of the tight hardware-based lockstep\relax }}{17}{figure.caption.7}
+\contentsline {figure}{\numberline {2}{\ignorespaces Schematic of the light-weight software-based lockstep\relax }}{18}{figure.caption.8}
+\contentsline {figure}{\numberline {3}{\ignorespaces SafeDE architecture\relax }}{20}{figure.caption.9}
+\contentsline {figure}{\numberline {4}{\ignorespaces N-modular redundancy scheme example with SafeDE\relax }}{23}{figure.caption.10}
+\contentsline {figure}{\numberline {5}{\ignorespaces High-level representation of SafeDE integrated into the De-RISC platform\relax }}{26}{figure.caption.11}

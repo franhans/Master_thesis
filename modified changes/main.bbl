@@ -76,7 +76,7 @@ Steven~K Reinhardt and Shubhendu~S Mukherjee.
   Architecture (IEEE Cat. No. RS00201)}, pages 25--36. IEEE, 2000.
 
 \bibitem{infineon2012aurix}
-M~Infineon.
+{Infineon}.
 \newblock Aurix multicore 32-bit microcontroller family to meet safety and
   powertrain requirements of upcoming vehicle generations, 2012.
 
@@ -119,20 +119,6 @@ Xabier Iturbe, Balaji Venu, Juergen Jagst, Emre Ozer, Peter Harrod, Chris
 {H2020 SELENE consortium}.
 \newblock {SELENE RISC-V open source hardware platform}.
 \newblock \url{https://gitlab.com/selene-riscv-platform}, 2021.
-
-\bibitem{ISAtests}
-University of~California.
-\newblock riscv-tests.
-\newblock \url{https://github.com/riscv-software-src/riscv-tests}, 2022.
-
-\bibitem{falk2016taclebench}
-Heiko Falk, Sebastian Altmeyer, Peter Hellinckx, Bj{\"o}rn Lisper, Wolfgang
-  Puffitsch, Christine Rochange, Martin Schoeberl, Rasmus~Bo S{\o}rensen, Peter
-  W{\"a}gemann, and Simon Wegener.
-\newblock Taclebench: A benchmark collection to support worst-case execution
-  time research.
-\newblock In {\em 16th International Workshop on Worst-Case Execution Time
-  Analysis}, 2016.
 
 \bibitem{skalagantt}
 Wolfgang Skala.

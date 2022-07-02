@@ -71,7 +71,9 @@ This thesis devises a new solution aiming at combining the advantages of existin
 
 We implement and integrate SafeDE in a space multicore prototype in an FPGA and validate that it effectively achieves its requirements with negligible hardware costs. Moreover, this work has already led to the publication of two peer-reviewed articles in especialized conferences and journals.
 
-
+%{Every copy of the thesis must have an abstract. An abstract must provide a concise summary of the thesis. In style, the
+%abstract should be a miniature version of the thesis: short introduction, a summary of the results, conclusions or main
+%arguments presented in the thesis. The abstract may not exceed 150 words for a Degree’s thesis.}
 
 \input{introduction}
 
@@ -111,6 +113,7 @@ We implement and integrate SafeDE in a space multicore prototype in an FPGA and 
 \clearpage
 \section{Conclusions and future development: }
 
+%{This should include your summary, conclusions and recommendations. }
 
 Existing lockstep solutions for safety-critical systems have a number of limitations related to the fact that some cores are not user-visible (hardware lockstep), and related to the performance cost of long staggering and running a monitoring process in an additional cores (software-only light lockstep). 
 
@@ -129,18 +132,14 @@ As part of our future work, we intend to further integrate SafeDE in other SoCs.
 \bibliographystyle{unsrt}
 \bibliography{bibliography.bib}
 
-%%%% ANNEX %%%
-%\clearpage
-%\newpage
-%
-%\begin{appendices}
-%
-%{Add following appendices: 
-%*SafeDE documentation
-%*SafeDE repo
-%*Linux driver
-%}
-%
-%\end{appendices}
+%%% ANNEX %%%
+\clearpage
+\newpage
+
+\begin{appendices}
+
+{Appendices may be included in your thesis but it is not a requirement.}
+
+\end{appendices}
 
 \end{document}
