@@ -1,5 +1,2 @@
-Think about the title
-Comment supervisors thingy
-
-
-Explain that transient faults and intermittent faults are similar (we only talk about transient faults no intermittent during the work)
+Add SELENE and De-RISC images
+Take a look to the bibliography

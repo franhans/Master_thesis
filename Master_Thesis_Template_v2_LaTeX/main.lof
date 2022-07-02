@@ -1,9 +1,11 @@
 \babel@toc {english}{}
-\babel@toc {english}{}
-\babel@toc {english}{}
-\babel@toc {english}{}
-\contentsline {figure}{\numberline {1}{\ignorespaces Schematic of the tight hardware-based lockstep\relax }}{17}{figure.caption.7}
-\contentsline {figure}{\numberline {2}{\ignorespaces Schematic of the light-weight software-based lockstep\relax }}{18}{figure.caption.8}
-\contentsline {figure}{\numberline {3}{\ignorespaces SafeDE architecture\relax }}{20}{figure.caption.9}
-\contentsline {figure}{\numberline {4}{\ignorespaces N-modular redundancy scheme example with SafeDE\relax }}{23}{figure.caption.10}
-\contentsline {figure}{\numberline {5}{\ignorespaces High-level representation of SafeDE integrated into the De-RISC platform\relax }}{26}{figure.caption.11}
+\contentsline {figure}{\numberline {1}{\ignorespaces Figure 2.2: Schematics for different SoR granularities \cite {hernandez2014live}\relax }}{13}{figure.caption.5}
+\contentsline {figure}{\numberline {2}{\ignorespaces Most relevant fault coupling mechanisms\relax }}{14}{figure.caption.6}
+\contentsline {figure}{\numberline {3}{\ignorespaces Schematic of the tight hardware-based lockstep\relax }}{16}{figure.caption.7}
+\contentsline {figure}{\numberline {4}{\ignorespaces Schematic of the light-weight software-based lockstep\relax }}{18}{figure.caption.8}
+\contentsline {figure}{\numberline {5}{\ignorespaces SafeDE architecture\relax }}{20}{figure.caption.9}
+\contentsline {figure}{\numberline {6}{\ignorespaces N-modular redundancy scheme example with SafeDE\relax }}{23}{figure.caption.10}
+\contentsline {figure}{\numberline {7}{\ignorespaces High-level representation of SafeDE's hardware\relax }}{25}{figure.caption.11}
+\contentsline {figure}{\numberline {8}{\ignorespaces High-level representation of SafeDE integrated into the De-RISC platform\relax }}{26}{figure.caption.12}
+\contentsline {figure}{\numberline {9}{\ignorespaces Excerpt of the assembly code of the benchmark FAC.\relax }}{34}{figure.caption.14}
+\contentsline {figure}{\numberline {10}{\ignorespaces Execution time of different TACLeBench benchmakrs normalized w.r.t. their execution time in isolation. Each benchmark is executed 1,000 times.\relax }}{36}{figure.caption.15}

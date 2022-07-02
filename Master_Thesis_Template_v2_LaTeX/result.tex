@@ -8,11 +8,11 @@ This section assesses SafeDE by different methods in the context of De-RISC MPSo
 
 Several strategies are applied to validate the correct SafeDE functionality:
 
-\textbf{Testbench:} The first approach to validating SafeDE is using a VHDL testbench that simulates the system's behavior by generating SafeDE inputs and reacting to its outputs. For that purpose, a component simulating the behavior of the cores is developed. This component generates the inst\_cnt signals for both cores, randomly setting its bits to '1' as if the cores were committing instructions. If the stall signal of one core is set to '1', this prevents the inst\_cnt signal bits of that core from being set to '1' as it would in a real core. 
+\textbf{Testbench:} The first approach to validating SafeDE is using a VHDL testbench that simulates the system's behavior by generating SafeDE inputs and reacting to its outputs. For that purpose, a component simulating the behavior of the cores is developed. This component generates the inst\_cnt signals for both cores, randomly setting its bits to '1' as if the cores were committing instructions. If the stall signal of one core is set to '1', this prevents the \textit{inst\_count} signal bits of that core from being set to '1' as it would in a real core. 
 
 In addition to this component,  procedures are defined at the testbench top to simulate APB read and write transactions. These procedures allow configuring the internal SafeDE registers during the simulation. As mentioned before, SafeDE has some statistic registers that can be read through the APB interface. During the testbench execution, the same statistics are computed at the top of the testbench so they can be compared with the results recovered from SafeDE. 
 
-Therefore, the testbench execution starts configuring internal SafeDE registers. After that, the testbench runs for a configurable number of cycles simulating two cores executing instructions that hold when the stall signals rise. Finally, SafeDE is stopped and the statistics are retrieved. The testbench pass provided that the statistics read from SafeDE registers and the statistics computed at the top of the testbench coincide and the staggering keeps all the time between the limits (TH\_max\_stagg > stag > TH\_min\_stag)
+Therefore, the testbench execution starts configuring internal SafeDE registers. After that, the testbench runs for a configurable number of cycles simulating two cores executing instructions that hold when the stall signals rise. Finally, SafeDE is stopped and the statistics are retrieved. The testbench pass provided that the statistics read from SafeDE registers and the statistics computed at the top of the testbench coincide and the staggering keeps all the time between the limits ($Min\_TH_{stag} < \#intst_{head} - \#inst_{trail} < Max\_TH_{stag}$).
 
 The testbench completion is the first step for SafeDE design validation and it also eases the development process since the testbench is automatically run each time a new Git push is performed, informing of potential errors each time the design is modified.
 
@@ -21,7 +21,6 @@ The testbench completion is the first step for SafeDE design validation and it a
 \textbf{RISC-V ISA tests:} RISC-V ISA tests \cite{ISAtests} are a group of tests designed by the University of California to test the correct functioning of the RISC-V ISA instructions. The ISA tests are written in a single assembly language file and contain a self-checking code to test the result. Each ISA test tests one operation from the RISC-V ISA forcing corner cases. 
 
 To load the binaries into the platform, control the execution flow and debug the application, we used GRMON. GRMON is a general debug monitor for the LEON (SPARC V7/V8) processor, NOEL-V (RISC-V) and for SOC designs based on the GRLIB IP library developed by CAES Gaisler. 
-\textcolor{red}{add reference to GRMON} 
 
 We modified the RISC-V ISA tests assembly code to configure and activate SafeDE prior to the test execution. We also performed some modifications to perform the execution in two different cores. The linker script is modified to load two ISA tests in two different address segments. GRMON is employed to activate both cores and determine the correct entry point. Once the test has finished, the results are stored in one register file register in each core. Those registers are read using GRMON to test that each test successfully passed. 
 
@@ -31,136 +30,72 @@ This process is automated via Makefiles (for the compilation), Bash scripts and 
 
 We ported some TACLe Benchmarks to RISC-V ISA and added some C functions from the bare metal drive to configure SafeDE and gather execution statistics. As with the RISC-V ISA tests, TACLe Benchmarks also have a self-checking function that compares the obtained results (or a signature summarizing the final result) and the expected results. TACLe Benchmarks are executed over the FPGA loaded with the De-RISC platform bitstream. Execution is controlled by GRMON. The compilation, loading and result checking processes are automated using different scripts. 
 
-We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering ($Min\_TH_{stag}$ = 20; $Max\_TH_{stag}$ = 32750) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution, the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that of the expected one (stag >= TH\_min\_stag = 20). 
+We checked for all the executed TACLe Benchmarks that the results with SafeDE forcing 20 instructions of staggering ($Min\_TH_{stag} = 20; Max\_TH_{stag} = 32750$) coincide with the expected results. Also, results from the statistic registers are gathered for every benchmark. We checked that in every execution, the number of executed instructions by both cores coincide and that the minimum staggering reached during the execution is never below that of the expected one ($staggering > Min\_TH_{stag} = 20$). Note that the maximum staggering threshold value is high enough to not interfere in the execution.
 
-Since a 1-cycle latency exists between the moment the stall signal is asserted until the core pipeline stops making progress, the former staggering condition does not hold all the time during the execution of the benchmarks. Since cores are dual-issue, they can commit two instructions each cycle, being the worst scenario the one in which, with a previous 21 instructions staggering, the trail core commits two instructions while the head core commits none. When this happens, the staggering reaches 19 instructions, and trail core stall signal rises. Since that signal will take effect the next cycle, the trail core can commit another two instructions while the head cores commit none again, leaving the staggering at 17 instructions. The same happens for TH\_max\_stagg. The real minimum staggering that is kept is dependent on the architecture, namely on the number of issues of the core and the number of cycles that elapses from the moment the stall signal is asserted until it stalls the pipeline. 
+Since a 1-cycle latency exists between the moment the stall signal is asserted until the core pipeline stops making progress, the former staggering condition does not hold all the time during the execution of the benchmarks. Since cores are dual-issue, they can commit two instructions each cycle, being the worst scenario the one in which, with a previous 21 instructions staggering, the trail core commits two instructions while the head core commits none. When this happens, the staggering reaches 19 instructions, and trail core stall signal rises. Since that signal will take effect the next cycle, the trail core can commit another two instructions while the head cores commit none again, leaving the staggering at 17 instructions. The same happens for $Max\_TH_{stag}$. The real minimum staggering that is kept is dependent on the architecture, namely on the number of issues of the core and the number of cycles that elapses from the moment the stall signal is asserted until it stalls the pipeline. 
 
 \bigskip
 
 
 
 \subsection{Fault Injection}
-\textcolor{red}{Work in progress}
-\textcolor{red}{Put something similar to what is written in the journal}
-
-To test the De-RISC platform CCFs detection capabilities when SafeDE is active, we perform a simulation-based fault injection campaign. For that purpose we add VHDL non-syntheiszable logic to the pipelines of the NOEL-V cores. This logic randomly injects faults in different pipeline locations. Namely, faults are injected in:
+We perform a simulation-based fault injection campaign to test the De-RISC platform CCFs detection capabilities when SafeDE is active. We added VHDL non-synthesizable logic to the pipelines of the NOEL-V cores. This logic randomly injects faults in different pipeline locations. Namely, faults are injected in:
 
 \begin{itemize}
-    \item \textbf{ALU:} Each core has two ALUs which have two 64-bit inputs (one per issue) \textcolor{red}{check this just in case}. The fault is injected in one bit of one of the inputs from one of the ALUs. The ALU as well as its input and the input bit are randomly selected. 
-    \item \textbf{Late ALU:} Each core has two late ALUs that help to effiently handle data depencies. Each late ALU has two 64-bit intpus. The fault is injected in one bit of one of the inputs from one of the late ALUs. The late ALU as well as its input and the input bit are randomly selected.
-    \item \textbf{Memory:} In the pipeline memory stage, a fault is injected in a random bit of the data that is about to be written into the data L1 cache.
-    \item \textbf{Write back:} The pipeline write back stage has two 64-bit \textcolor{red}{check this just in case} write ports to write the data in the register file. One bit from one of the write ports is randomly selected to insert the fault.
+    \item \textbf{ALU:} Each core has two ALUs which have two 64-bit inputs (one per issue) \textcolor{red}{check this just in case}. The fault is injected in one bit of one of the inputs from one of the ALUs. The ALU, its input and the input bit are randomly selected. 
+    \item \textbf{Late ALU:} Each core has two late ALUs that help to handle data dependencies efficiently. Each late ALU has two 64-bit inputs. The fault is injected in one bit of one of the inputs from one of the late ALUs. The late ALU, its input, and the input bit are randomly selected.
+    \item \textbf{Memory:} In the pipeline memory stage, a fault is injected in a random bit of the data about to be written into the data L1 cache.
+    \item \textbf{Write back:} The pipeline write back stage has two 64-bit \textcolor{red}{check this just in case} write ports to write the data in the register file. One bit from the write ports is randomly selected to insert the fault.
 \end{itemize}
 
-During the fault injection campaign, three different fault models are simulated: stuck-at-0, stuck-at-1 and bit flip. When the targeted bit is selected to introduce the fault, its value is set to '0' for the stuck-at-0 model, to '1' for the stuck-at-1 model and to the logical opposite \textcolor{red}{logical opposite is correct?} value for the bit flip. At first, simulated faults were of one cycle of duration. However, we found that most of the injected faults were masked. For that reason, a second fault injection campaign was performed but this time increasing the fault durations to 10 cycles. In the case of the bit flip model, the first cycle the bit is flipped and the value is kept during the nine subsequent cycles.
+Three different fault models are simulated during the fault injection campaign: stuck-at-0, stuck-at-1 and bit flip. The targeted bit for the fault injection is set to '0' for the stuck-at-0 model, to '1' for the stuck-at-1 model and to the logical opposite value for the bit flip. At first, simulated faults were of one cycle of duration. However, we found that most of the injected faults were masked. For that reason, a second fault injection campaign was performed, increasing the fault durations to 10 cycles. In the case of the bit flip model, the bit is flipped in the first cycle, and the value is kept during the nine subsequent cycles.
 
-Simulation-based fault injection require a lot of computation capacity and simulations can take a long time to complite. To shorten simulation times we have selected several short TACLe Benchamrks: Fac, ....\textcolor{red}{add benchmark names, describe briefly what they do}
+Simulation-based fault injection requires a lot of computation capacity and can take a long time to complete. To shorten the experimentation time, we chose a concrete TACLe Benchmark: FAC, one of the shortest TACLe Benchmarks. Before launching the experiments, our intuition was that only CCFs that cannot be detected using a lockstepped execution regardless of its implementation (hardware/software tight/light) would go unnoticed. Those insights proved to be right for the selected benchmark FAC.
 
-\begin{itemize}
-    \item \textbf{FAC:} It computes the factorial several numbers accumulates its results. \textcolor{red}{check it} It make use of recursive function calls.
-    \item \textbf{...} 
-\end{itemize}
-%In princi-
-%ple, no CCFs should escape SafeDE itself, and we expected to
-%find only CCFs that cannot be detected by light-weight and/or
-%tight lockstepping, regardless of how this is implemented. As
-%shown next, all those insights are already observed with this
-%benchmark. 
+The code of the benchmarks is executed in both cores simultaneously. SafeDE is configured to impose a minimum staggering threshold of 20 instructions and a maximum staggering threshold of 32750 instructions (value pre-defined when the user does not set the maximum staggering). Although the staggering will never reach the maximum threshold due to its big value. The fault could be injected at any cycle provided that both CritSec registers are activated. Hence, the fault is randomly injected at any cycle between the moment the trail core starts its critical region until the head core finishes it. The fault location is randomly selected among the ones mentioned above. The fault is injected in the same location and simultaneously in both cores emulating a CCF.
 
-The code of the benchmarks is executed in both cores simultaneously. SafeDE is configured to impose a minimum staggering threshold of 20 instructions and a maximum staggering threshold of 32750 instructions (value pre-defined when the maximum staggerin is not set). The maximum threshold will never be reached and we can think the maximum threshold as if it not existed. The fault could be injected at any cycle provided that both CritSec registers are activated. Hence, the fault is randomly injected at any cycle between the moment the trail core starts its critical region until the head core finishes it. The fault location is randomly selected among the aformentioned ones. The fault is injected in the same location and at the same time in both cycles to emulate a CCF.
-
-
-%We have analyzed the results of each simulation considering
-%the comparison of results with the golden run outputs, memory
-%dump comparison, and monitoring the AHB transmission
-%during the simulation (to check for invalid memory accesses).
-%The possible outcomes considered are based on the cat-
-%egories in [21], which we extend conveniently to consider
-%additional categories relevant for CCFs:
-
-To analyze the simulation results we take advantege of the TACLe Benchmarks routine to check if the execution results coincide with the expected results. With this, we know if the both execution outputs were correct or not. In addition to that, an VHDL procedure to dump the memory contents into a file is designed. After each simulation, memory dumps of both cores are compared to each other and to the golden run memory dump. During the execution a memory position out of the memory limits could be modified. In a real execution this could produce a segmentation fault if the application is running over an operating system or the configuration of a peripheral could be modified. For that reason, a VHDL \textcolor{red}{check this} procedure was designed to monitor the AHB interface and detect any transaction out of the memory limits.
+To analyze the simulation results, we take advantage of the TACLe Benchmarks routine to check if the execution results coincide with the expected results. With this, we know if both execution outputs were correct or not. In addition, a VHDL procedure to dump the memory contents into a file is designed. After each simulation, memory dumps of both cores are compared to each other and the golden run memory dump. During the execution, the core could try to perform a store operation outside the memory limits. In a real execution, this could produce a segmentation fault if the application is running over an operating system. The core could also modify internal registers of a peripheral unintendedly. For that reason, a VHDL \textcolor{red}{check this} procedure was designed to monitor the AHB interface and detect any transaction outside the memory limits.
 
 \begin{itemize}
     \item \textbf{Timeout:} Simulation time exceeds by three the fault-free simulation time of the benchmark.
     \item \textbf{Crash:} The simulation process is terminated abnormally.
-    \item \textbf{Software detected:} The software comparison detected a mismatch between both cores execution results. This category includes latent memory errors that differ between cores. Hence, they are not inmediatly detected by the comparison mechanism but if they eventually manifested they would do as different execution outpus.
-    \item \textbf{Identical memory SDC:} Both executions produce the same memory corruptions (SDC) and they could potentially cause the same incorrect execution results, making it impossible for the comparison mechanism to detect the failures. It is detected using the memory dumps.
-    \item \textbf{DUE:} One of the cores wrote out of its memory limits causing a non-recoverable error. It is detected by the AHB monitoring.
-    \item \textbf{Masked:} When the outputs and memory contents are equal to the ones of the golden run the fault is masked.
-    \item \textbf{Undetected error:} The execution results were different from those of the golden run but they coincide between both cores. In this case software comparison does not detect the error and SafeDE fails protecting the system against the CCF.
+    \item \textbf{Software detected:} The software comparison detected a mismatch between both core execution results. This category includes latent memory errors that differ between cores. Hence, they are not immediately detected by the comparison mechanism, but if they eventually manifest, they would do as different execution outputs.
+    \item \textbf{Identical memory SDC:} Both executions produce the same memory corruptions (SDC) and could potentially cause the same incorrect execution results, making it impossible for the comparison mechanism to detect the failures. It is detected using the memory dumps.
+    \item \textbf{DUE:} One of the cores wrote outside its memory limits, causing a non-recoverable error. The AHB monitoring detects it.
+    \item \textbf{Masked:} The fault is masked when the outputs and memory contents are equal to the ones of the golden run.
+    \item \textbf{Undetected error:} The execution results were different from the golden run, but they coincide between both cores. In this case, software comparison does not detect the error and SafeDE fails to protect the system against the CCF.
 \end{itemize}
 
 
+Table \ref{fault_injection_results} summarizes the results of the fault injection campaign. 4,000 simulations were performed for each fault model and duration. A total of 24,000 simulations were carried out. As shown, most of the injected faults are masked. As expected, the likelihood of a fault being masked decreases when the duration of the fault increases. Some faults led to a timeout or a crash, making the error easily detectable. Other faults produced different erroneous outputs in both cores and were detected by software comparison. Some of the simulations produced errors in memory, but in none of the cases, the errors were equal across both cores (identical SDC is always 0 for all the experiments). None of the fault-injection experiments led to a DUE. However, some injections classified in other categories (timeout, crash or software detected) wrote outside the memory limits.
 
 
-%Table I summarizes the fault injection results. For each fault
-%model and fault duration (either 1 or 10 cycles), we performed
-%4,000 simulations. As shown, out of the 24,000 simulations
-%performed, some simulations led to timeout or crash, hence
-%making the error easily detectable. The number of such cases
-%is higher for a larger fault duration. Some other faults led to
-%errors detected by comparing the outputs, including data in
-%memory (SW detected). Some simulations produced errors in
-%memory, but none of those cases had the two memory dumps
-%equal. Hence, identical memory SDC – one of the two CCF
-%categories – is always zero. During the injection campaign, no
-%DUE appeared. Still, some injections that were classified in the
-%timeout, crash or error detected categories also wrote out of
-%their memory limits. Most of the faults injected were masked.
-%This is particularly true if the fault duration is short (1 cycle).
-%Finally, only in six of the simulations the error produced could
-%not be detected by the software comparison. In all occasions,
-%the faults were injected in the write back stage. Since these
-%six experiments would correspond to a CCF despite using
-%lockstepping, we analyze them in detail.
+ \begin{table}[h]
+    \caption{Fault injection results classified by fault model.}
+    \label{fault_injection_results}
+    \centering
+    \includegraphics[width=1\columnwidth]{img/faultinjection2.png}
+\end{table}
+   
+
+From all the simulations performed, the injected fault produced an error that the software comparison mechanism could not detect only in six. In all cases, the faults were injected in the write back stage. These errors led the system to a failure despite employing SafeDE to force a staggered execution. For that reason, we found it interesting to analyze those simulations in detail.
 
 
-%The benchmark FAC calculates and accumulates the facto-
-%rials of the numbers from 12 to 0 using recursion. As shown
-%in Figure 5, the assembly code obtained after compilation has
-%three main sections: initialization, an outer loop to accumulate
-%the factorials and an inner loop to derive the factorials. The
-%fault injected (a bit flip) in the head core is applied while
-%the factorial of 8 is being processed in the inner loop. The
-%least significant bit of the second write port of the register
-%file becomes 1 instead of 0, and the value store is erroneous
-%for up to 10 cycles. However, those values are read through
-%a bypass in the inner loop instead of from the register file, so
-%no impact is observed in the inner loop. In the last iteration of
-%the inner loop, the result of the factorial is stored in register
-%a4 (line 8) with an erroneous value (due to the duration of the
-%fault). Later, the register a4 is read as an operand for addw
-%instruction in line 17, which accumulates all the calculated
-%factorials. Therefore, this error is propagated to the output.
-%Particularly, the erroneous result contains one bit flip in the
-%least significant bit with respect to the correct result.
-%In the trail core, the fault is injected while the core is
-%executing the outer loop. The fault affects several instructions,
-%but all the errors except one are masked because they are either
-%overwritten or not read since they are forwarded like in the
-%head core. The error not masked is produced in line 17 when
-%the result of the addition is written back to the a6 register,
-%which stores the accumulation of the factorials. Again, the final
-%value contains one bit flip with respect to the correct output in
-%the least significant bit. Therefore, even though the fault affects
-%both cores differently, in the end, it produces the same bit flip
-%in the accumulated register (a6), which stores the output value.
-%Thus, the software is not capable of detecting the error, not
-%because of a malfunctioning of SafeDE, but because of the
-%semantics of the benchmark FAC. In fact, even if we used
-%tight lockstepping, external core activity would be identical
-%for both cores and no error would be detected.
-%We content that, despite we could produce this apparent
-%CCF in our fault injection campaign, such effect would be
-%very unlikely to occur in practice since both cores have
-%different states when the fault occurs, and this should lead to
-%heterogeneous electric impact, hence causing heterogeneous
-%errors (e.g., affecting only one core, or affecting different bits
-%or locations of both cores).
+The benchmark FAC calculates the factorials from 0 to 12. Each result is accumulated in global variable. Finally, the value of this variable that contains the addition of all the factorials is compared to the expected result. FAC performs the factorial operation employing recursion. Figure \ref{fig:fac_assembly} shows the assembly code obtained after compiling the C code. We could distinguish three different sections: initialization, an outer loop that accumulates the factorial results and an inner loop that compute the factorials using recursion. 
+
+In this particular case, the fault model is a bit flip that lasts 10 cycles. The bit selected to inject the fault is the least significant bit of the second write port of the register file, which flips to 1 and introduces an erroneous value in the write port. The fault is injected while the program is computing the factorial of 8. 
+
+%%Rewrite it
+However, those values are read through a bypass in the inner loop instead of from the register file, so no impact is observed in the inner loop. In the last iteration of the inner loop, the result of the factorial is stored in register a4 (line 8) with an erroneous value (due to the duration of the fault). Later, the register a4 is read as an operand for addw instruction in line 17, which accumulates all the calculated factorials. Therefore, this error is propagated to the output. Particularly, the erroneous result contains one bit flip in the least significant bit with respect to the correct result.
+
+In the trail core, the fault is injected while the core is executing the outer loop. The fault affects several instructions, but all the errors except one are masked because they are either overwritten or not read since they are forwarded like in the head core. The error not masked is produced in line 17 when the result of the addition is written back to the a6 register, which stores the accumulation of the factorials. Again, the final value contains one bit flip with respect to the correct output in the least significant bit. Therefore, even though the fault affects both cores differently, in the end, it produces the same bit flip in the accumulated register (a6), which stores the output value.
+
+Thus, the software is not capable of detecting the error, not because of a malfunctioning of SafeDE, but because of the semantics of the benchmark FAC. In fact, even if we used tight lockstepping, external core activity would be identical for both cores and no error would be detected. We content that, despite we could produce this apparent CCF in our fault injection campaign, such effect would be very unlikely to occur in practice since both cores have different states when the fault occurs, and this should lead to heterogeneous electric impact, hence causing heterogeneous errors (e.g., affecting only one core, or affecting different bits or locations of both cores).
+%%%%%%%%%%%%
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=1]{img/fac_assembly.png}
+    \includegraphics[scale=0.4]{img/fac_assembly.png}
     \caption{Excerpt of the assembly code of the benchmark FAC.} 
     \label{fig:fac_assembly}
 \end{figure}
@@ -187,7 +122,7 @@ Figure \ref{fig:tacle_results} shows the results. In the Figure, the execution t
 
 \begin{figure}[h]
     \centering
-    \includegraphics[scale=1]{img/tacle_results.png}
+    \includegraphics[scale=0.6]{img/tacle_results.png}
     \caption{Execution time of different TACLeBench benchmakrs normalized w.r.t. their execution time in isolation. Each benchmark is executed 1,000 times.}
     \label{fig:tacle_results}
 \end{figure}

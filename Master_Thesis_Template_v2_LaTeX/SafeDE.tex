@@ -4,6 +4,8 @@
 
 This section presents the architecture of SafeDE, its features and limitations, its extension towards N-modular redundancy, and its implementation and integration (both hardware and software) details.
 
+SafeDE VHDL files along with its bare metal driver and documentation, are uploaded to a GitLab public repository under a MIT License \cite{SafeDEgit}.
+
 \subsection{Architecture}
 
 SafeDE is built on the light-weight lockstepping concept. As explained in the section \ref{section:software_light_lockstep}, this approach has already been implemented in software. However, the implemented software light-weight lockstep needs a third core running the monitor thread and the frequency at which the monitor can retrieve the executed instruction, compute the staggering and apply corrective measures is low. As a consequence, the long feedback loop imposes a large staggering. 
@@ -30,6 +32,7 @@ Note that neither core has a pre-defined head or trail core role. The first core
 
 
 \subsection{Features and limitations analysis}
+\label{section:SafeDE_limitations}
 
 In this section, the main SafeDE limitations and features are presented and compared against the limitations and features of the software-only approach.
 
@@ -98,10 +101,7 @@ Figure \ref{fig:N_modular_redundancy} shows the concept of flexible N-modular re
 We have integrated SafeDE in two different multiprocessor platforms based on CAES Gaisler RISC-V NOEL-V cores. This section describes both platforms and provides detailed information on the SafeDE hardware implementation and integration. Later, the SafeDE configuration process is explained. Finally, SafeDE software integration is reviewed both for a bare metal setup and for a platform running Linux.    
 
 
-
 \subsubsection{De-RISC and SELENE Platforms}
-\textcolor{red}{Maybe add an couple of images of the platforms}
-
 
 \textbf{De-RISC platform:} The De-RISC platform \cite{gomez2020risc} is developed in the scope of a European project motivated by the lack of a high-performance Multiprocessor System on a chip (MSPSoC) suitable for space applications. Most of the existing platforms do not supply the necessary performance required by spacecraft, are not reliable enough and are not compliant with the safety requirements for space applications or face export restrictions like the use of proprietary Instruction Set Architecture (ISA). 
 
@@ -112,7 +112,6 @@ De-RISC platform is composed of different reusable IP cores developed by CAES Ga
 As a proof of concept, we have integrated SafeDE into the De-RISC industrial space platform. The platform is configured to instantiate 2 CAES Gaisler's NOEL-V 64-bit cores. NOEL-V cores implement the RISC-V ISA, are dual-issue, and implement a 7-stages pipeline. Both cores have one private L1 data and instructions caches. The IP cores are centered around several AMBA AHB and APB buses. Cores are connected to the L2 cache and some peripherals through a 128-bit AMBA Advanced High-performance Bus (AHB). A 32-bit low-bandwidth Advanced Peripheral Bus (APB) is instantiated for components requiring low bandwidth and is connected to the main AHB Bus through an AHB/APB bridge. The L2 cache is shared for all the cores and is connected to the Memory controller through another 128-bit AHB bus.
 
 
-\textcolor{red}{citar repo SELENE}
 \textbf{SELENE platform:} SELENE \cite{SELENEgit} is another European project that focuses on developing a High-Performance Computing (HPC) Multicore platform capable of delivering the computation capabilities needed by autonomous systems in safety-critical domains such as space, avionics, robotics and factory automation. HPC platforms impose some difficulties when being certified for safety-critical systems since they usually lack support for functional and timing isolation and testability. The project tries to overcome these limitations by developing an open-source Safety-critical Cognitive Computing Platform (CCP) with self-awareness, self-adapting, and autonomous capabilities. 
 
 SELENE computing platform builds upon a combination of multicore and accelerators that will be prototyped on an FPGA so that they can be extended and upgraded. SELENE platform is also developed using the IP CORES from GRLIB IP CAES Gaisler and other GPL IP cores developed by other project partners. SafeDE is one of the IP cores devised to be integrated into the SELENE platform to make it safer.
@@ -121,33 +120,30 @@ SELENE platform is very similar to the De-RISC platform since the basic IP cores
 
 The results and conclusions of this work come from the experiments performed on the De-RISC platform. However, SafeDE is not integrated into the official version of the De-RISC project and the integration was made only as a research exercise. Regarding the SELENE project, SafeDE is one of the safety IP cores integrated into the platform's final version to cover its safety needs.
 
-%% Check from here %%%
-
 \subsubsection{Hardware Implementation and Integration}
-\textcolor{red}{Add images}
 
-Since the system only needs to interface with SafeDE to configure it by modifying its internal registers, it demands low bandwidth. Hence, to avoid unnecessary complexity is connected to the system through an APB interface. As shown in Figure \textcolor{red}{add reference}, SafeDE is built in three independent hardware layers developed in VHDL. 
+Since the system only needs to interface with SafeDE to configure it by modifying its internal registers, it demands low bandwidth. Hence, to avoid unnecessary complexity is connected to the system through an APB interface. As shown in Figure \ref{fig:SafeDE_hardware}, SafeDE is built in three hardware layers developed in VHDL. 
 
-%\begin{figure}[h]
-%    \centering
-%    \includegraphics[scale=0.25]{img/system.png}
-%    \caption{High-level representation of SafeDE integrated into the De-RISC platform}
-%    \label{fig:De-RISC_SafeDE}
-%\end{figure}
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.4]{img/SafeDE_hardware.png}
+    \caption{High-level representation of SafeDE's hardware}
+    \label{fig:SafeDE_hardware}
+\end{figure}
 
 \begin{itemize}
-    \item The first layer (the inner one) called \textit{staggering\_handler} instantiates SafeDE's core functionality. This layer is responsible for calculating the instructions executed by each core, computing the staggering and asserting the stall signal when needed. This layer is portable since it is entirely independent of the platform interface. 
-    \item The second layer implements the APB protocol. Configuration and statistical registers are implemented in this layer. This layer allows the AHB masters (cores) to modify SafeDE internal registers. The values stored in the internal registers act as inputs for the \textit{staggering\_handler} layer.
-    \item Finally, the outer layer is an AMBA APB wrapper. This wrapper converts the defined APB AMBA types from the GRLIB IP library to standard VHDL types. In this way, the first two layers are completely portable for any platform implementing APB interface.
+    \item The most inner layer called \textit{Staggering Handler} instantiates SafeDE's core functionality. This layer is responsible for calculating the instructions executed by each core, computing the staggering and asserting the stall signal when needed. This layer is completely portable since it is entirely independent of the platform interface. 
+    \item The second layer, the \textit{APB configuration layer}, implements the APB protocol. Configuration and statistical registers are also implemented in this layer. This layer allows the AHB masters (cores) to interface with SafeDE and read and write SafeDE internal registers. The values stored in the internal registers act as inputs for the \textit{Staggering Handler} layer.
+    \item Finally, the outer layer is the \textit{APB wrapper} layer. This wrapper converts the defined APB AMBA types from the GRLIB IP library to standard VHDL types. In this way, the first two layers are completely portable for any platform implementing the APB interface.
 \end{itemize}
 
 As mentioned, SafeDE needs an internal signal from each core pipeline that provides information about how many instructions each core has executed. SafeDE also needs a signal capable of stalling the cores, stopping their progress whenever the staggering is smaller than the set threshold. 
 
-To provide the information related to the executed instructions, we employed a 2-bit signal "inst\_cnt". Each of the bits of the signal provides information about each issue of the core. Whenever the issue commits one instruction, the corresponding bit is set to '1' during one cycle. Each core is modified to feed these signals to SafeDE as inputs. With these signals, SafeDE can compute the executed instructions by both cores from a given time instant. Although the De-RISC and the SELENE platforms implement dual-issue NOEL-V cores, SafeDE can be configured through a generic to work with cores with an arbitrary number of issues. 
+To provide the information related to the executed instructions, we employed a 2-bit signal \textit{inst\_count}. Each of the bits of the signal provides information about each issue of the core. Whenever the issue commits one instruction, the corresponding bit is set to '1' during one cycle. Each core is modified to feed these signals to SafeDE as inputs. With these signals, SafeDE can compute the executed instructions by both cores from a given time instant. Although the De-RISC and the SELENE platforms implement dual-issue NOEL-V cores, SafeDE can be configured through a generic to work with cores with an arbitrary number of issues. 
 
 Each signal SafeDE uses to stall each of the cores is ANDed with a signal, called holdn, driven in the caches controller. The holdn signal is an active-low signal that freezes the pipeline of the core when it is set to '0', preventing the pipeline registers values from updating. ANDing the holdn and the SafeDE stall signal, the pipeline is held any time one of those signals is set to '0'. For simplicity, SafeDE stall outputs are active-high and their value is inverted later. 
 
-Although it is not among the functionalities for which the SafeDE concept was initially devised, SafeDE also can be configured to set a maximum staggering threshold $Max\_TH_{stag}$. Whenever the staggering between both cores is bigger or equal to the configured threshold (\#instr\_head - \#instr\_trail >= $Max\_TH_{stag}$), the head core is stalled. This is useful to reduce the error detection time when intermediate results of the execution are compared between both cores.
+Although it is not among the functionalities for which the SafeDE concept was initially devised, SafeDE also can be configured to set a maximum staggering threshold $Max\_TH_{stag}$. Whenever the staggering between both cores is bigger or equal to the configured threshold ($\#instr_{head} - \#instr_{trail} \geq Max\_TH_{stag}$), the head core is stalled. This is useful to reduce the error detection time when intermediate results of the execution are compared between both cores.
 
 Figure \ref{fig:De-RISC_SafeDE} shows an image of the De-RISC platform with SafeDE controlling the staggering of both cores. As shown in Figure \ref{fig:De-RISC_SafeDE}, SafeDE has 3 32-bit configuration registers (Configuration, CritSec1 and CritSec2) plus several statistic registers to gather execution information.
 
@@ -170,7 +166,7 @@ SafeDE statistic registers gather information from the execution. Namely, they c
 
 \subsubsection{Configuration and Operation}
 
-When using SafeDE, the first step is configuring the desired staggering thresholds $Max\_TH_{stag}$ and $Min\_TH_{stag}$. If the $Max\_TH_{stag}$ is not configured, $Max\_TH_{stag}$ will be internally set close to its maximum possible value (32750). After configuring the staggering thresholds, the next step is to set to '1' the activation bit (bit 32 of the configuration register), which is Ored with the stall signals. The first core reaching the code section that needs lockstep protection will set its CritSec register first bit to '1'. From that moment, this core will assume the head roll and SafeDE will start counting each committed instruction. Later, the second core will reach the code region needing protection and set its CritSec register assuming the trail roll. Once one core have set it CritSec register, SafeDE will check that the staggering is within the limits ($Min\_TH_{stag}$ < staggering < $Max\_TH_{stag}$) and will stall any of the cores if needed until the previous condition is met.  
+When using SafeDE, the first step is configuring the desired staggering thresholds $Max\_TH_{stag}$ and $Min\_TH_{stag}$. If the $Max\_TH_{stag}$ is not configured, $Max\_TH_{stag}$ will be internally set close to its maximum possible value (32750). After configuring the staggering thresholds, the next step is to set to '1' the activation bit (bit 32 of the configuration register), which is Ored with the stall signals. The first core reaching the code section that needs lockstep protection will set its CritSec register first bit to '1'. From that moment, this core will assume the head roll and SafeDE will start counting each committed instruction. Later, the second core will reach the code region needing protection and set its CritSec register assuming the trail roll. Once one core have set it CritSec register, SafeDE will check that the staggering is within the limits ($Min\_TH_{stag} < \#intst_{head} - \#inst_{trail} < Max\_TH_{stag}$) and will stall any of the cores if needed until the previous condition is met.  
 
 Once the head core has finished the execution, it will set its CritSec register bit to '0'. SafeDE will let the trail core finish the execution without intervention. Once the trail core finishes the execution, it will set its CritSec register bit to '0' analogously to the head core. When both CritSec registers' first bits have value '0', SafeDE will set the instruction counts of both cores to 0.
 \bigskip
@@ -178,7 +174,6 @@ Once the head core has finished the execution, it will set its CritSec register 
 
 \subsubsection{Software Integration}
 \label{section:software_integration}
-\textcolor{red}{TODO it I have enough time: add information about how Linux works, make it pretty}
 
 We developed the software interface to control SafeDE IP. SafeDE can be employed in two different software environments: In a bare metal setup, where there is no restriction to access the hardware registers directly and a simple C library suffices to handle SafeDE. In a setup with an operating system running on top of it. In this scenario, the operating system is responsible for handling and protecting the hardware and direct hardware access is not granted to the user. Hence, a driver running in the kernel space and an API that performs the communication from the user space to the kernel space are required. Since Linux was ported to the SELENE platform as part of the SELENE project, we developed a driver to procure SafeDE an interface with Linux.
 
