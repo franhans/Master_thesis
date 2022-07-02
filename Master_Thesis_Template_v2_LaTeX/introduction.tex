@@ -3,19 +3,18 @@
 \section{Introduction}
 
 {\color{magenta}
-{An Introduction that clearly states the rationale of the thesis that includes:}
+%{An Introduction that clearly states the rationale of the thesis that includes:}
 
-\begin{enumerate}
-\item {Statement of purpose (objectives).}
-\item {Requirements and specifications.}
-\item {Methods and procedures, citing if this work is a continuation of another project or it uses applications, algorithms,
-software or hardware previously developed by other authors.}
-\item {Work plan with tasks, milestones and a Gantt diagram.}
-\item {Description of the deviations from the initial plan and incidences that may have occurred. }
-\end{enumerate}
+%\begin{enumerate}
+%\item {Statement of purpose (objectives).}
+%\item {Requirements and specifications.}
+%\item {Methods and procedures, citing if this work is a continuation of another project or it uses applications, algorithms, software or hardware previously developed by other authors.}
+%\item {Work plan with tasks, milestones and a Gantt diagram.}
+%\item {Description of the deviations from the initial plan and incidences that may have occurred. }
+%\end{enumerate}
 }
 
-\bigskip
+%\bigskip
 
 
 \subsection{Context and Objectives}
@@ -37,7 +36,7 @@ Therefore, this thesis presents SafeDE, a \underline{D}iversity \underline{E}nfo
 The main contributions of this work are as follows:
 \begin{itemize}
 \item We present SafeDE, the monitoring module to enable lowly-intrusive diverse redundancy with a flexible scheme that can be enabled or disabled at convenience. We further detail how to extend it to arbitrary redundancy (e.g., with 3 or more cores instead of only 2).
-\item We implement it at VHDL in a SoC for the space domain based on CAES Gaisler's NOEL-V cores~\cite{SELENEgit}, and provide details on its bare metal and Linux integrations.
+\item We implement it at VHDL in a SoC for the space domain based on CAES Gaisler's NOEL-V cores~\cite{gomez2020risc,SELENEgit}, and provide details on its bare metal and Linux integrations.
 \item We assess SafeDE's performance and area overheads, as well as effectiveness through a fault injection campaign.
 \end{itemize}
 
@@ -63,4 +62,34 @@ This work aims at developing SafeDE, a hardware module providing support for lig
 
 
 \subsection{Methods, Procedures and Previous Work}
+Since the goal was implementing SafeDE in the context of existing SoCs~\cite{gomez2020risc,SELENEgit}, and the software counterpart of SafeDE already existed~\cite{alcaide2020software}, those SoCs and software-only solution shaped the methodology. In particular, the software-only solution determines that the input to the SafeDE module is the instruction count of the cores running tasks redundantly, and the output is a signal capable of stalling one of the cores. The particular SoC, and its specific cores, determine the signals that need being exported from those IPs so that SafeDE can monitor execution progress and stall the corresponding core whenever there is risk of losing diversity.
+
+Since the design has been prototyped in a FPGA, the toolflow used in the project where those SoCs were designed and enhanced has been inherited for this work. 
+
+Finally, for validation purposes, SafeDE has been implemented including a number of debug features capable of counting how many times diversity is lost, how many instructions one core is ahead of the other, and the like. Such information allowed validating the correctness and efficiency of the implementation providing factual evidence of the actual staggering achieved across redundant cores. Tests were conducted with a wide variety of relevant benchmarks on a baremetal setup to validate the implementation.
+
+Regarding previous work, we build on the software-only solution proposed by Alcaide et al.~\cite{alcaide2020software}. Such solution is described in more detail in Section~\ref{section:software_light_lockstep}, but essentially consists of a software monitor (a program) running periodically and reading the instruction count registers of two cores executing a program redundantly. If the staggering among them is regarded as too low, then the monitor send a stall signal to the core behind (trail core), and whenever the other core (head core) is ahead enough, the execution in the trail core is resumed by the monitor. In our case, the monitor is implemented as a hardware module (SafeDE), the monitoring frequency is every cycle, and the staggering needed much lower due to the higher frequency to check the staggering and the almost immediate control to stall the trail core.
+
+
+\subsection{Work Plan and Deviations}
+We had the opportunity of starting this work in the context of a European project well ahead of the time of starting the TFM. Hence, no specific work plan was stablished and execution of the work was based on the same flow used for other components of the SoC, and monitored with weekly meetings plus ad-hoc meetings to discuss unforeseen cases. As a result, the work was complete before the official start of the TFM and published in the two publications indicated in the following subsection, and the only part remaining was the preparation of this document. 
+
+For obvious reasons, since the work was executed timely, no deviation can be claimed to have occurred.
+
+
+\subsection{Publications}
+
+This work has led to the following two publications in especialized peer-reviewed conferences and journals:
+
+\begin{itemize}
+\item 
+Francisco Bas, Sergi Alcaide, Ruben Lorenzo, Guillem Cabo, Guillermo Gil, Oriol Sala, Fabio Mazzocchetti, David Trilla, Jaume Abella.
+\emph{SafeDE: a Flexible Diversity Enforcement Hardware Module for Light-lockstepping}. 
+\textbf{IEEE 27th International Symposium on On-Line Testing and Robust System Design (IOLTS)}, 2021, pp. 1-7, doi: 10.1109/IOLTS52814.2021.9486715.
+
+\item
+Francisco Bas, Sergi Alcaide, Guillem Cabo, Pedro Benedicte, Jaume Abella.
+\emph{SafeDE: A Low-Cost Hardware Solution to Enforce Diverse Redundancy in Multicores}.
+\textbf{IEEE Transactions on Device and Materials Reliability}, vol. 22, no. 2, pp. 111-119, June 2022, doi: 10.1109/TDMR.2022.3156799.
+\end{itemize}
 
