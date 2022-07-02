@@ -76,7 +76,7 @@ Steven~K Reinhardt and Shubhendu~S Mukherjee.
   Architecture (IEEE Cat. No. RS00201)}, pages 25--36. IEEE, 2000.
 
 \bibitem{infineon2012aurix}
-M~Infineon.
+{Infineon}.
 \newblock Aurix multicore 32-bit microcontroller family to meet safety and
   powertrain requirements of upcoming vehicle generations, 2012.
 
@@ -93,6 +93,32 @@ Francisco G{\'o}mez, Miguel Masmano, Vicente Nicolau, Jan Andersson, Jimmy
 \newblock De-risc--dependable real-time infrastructure for safety-critical
   computer systems.
 \newblock {\em Ada User Journal}, 41(2):107--112, 2020.
+
+\bibitem{ISO26262}
+{International Standards Organization}.
+\newblock {\em {ISO/DIS 26262. Road Vehicles -- Functional Safety}}, 2009.
+
+\bibitem{ClassicDiversity}
+A.~Avizienis and J.P.J. Kelly.
+\newblock Fault tolerance by design diversity: Concepts and experiments.
+\newblock {\em Computer}, 17(8):67--80, 1984.
+
+\bibitem{STlockstep}
+{STMicroelectronics}.
+\newblock {32-bit Power Architecture microcontroller for automotive
+  {SIL3/ASILD} chassis and safety applications}, 2014.
+
+\bibitem{paper1}
+Xabier Iturbe, Balaji Venu, Juergen Jagst, Emre Ozer, Peter Harrod, Chris
+  Turner, and John Penton.
+\newblock Addressing functional safety challenges in autonomous vehicles with
+  the arm tcl s architecture.
+\newblock {\em IEEE Design and Test}, 35(3):7--14, 2018.
+
+\bibitem{SELENEgit}
+{H2020 SELENE consortium}.
+\newblock {SELENE RISC-V open source hardware platform}.
+\newblock \url{https://gitlab.com/selene-riscv-platform}, 2021.
 
 \bibitem{skalagantt}
 Wolfgang Skala.

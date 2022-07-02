@@ -5,55 +5,46 @@ Reallocating 'name_of_file' (item size: 1) to 6 items.
 The style file: unsrt.bst
 Reallocating 'name_of_file' (item size: 1) to 17 items.
 Database file #1: bibliography.bib
-Warning--I didn't find a database entry for "ISO26262"
-Warning--I didn't find a database entry for "ClassicDiversity"
-Warning--I didn't find a database entry for "SergiIOLTS"
-Warning--I didn't find a database entry for "STlockstep"
-Warning--I didn't find a database entry for "infineon_aurix"
-Warning--I didn't find a database entry for "Iturbe2019"
-Warning--I didn't find a database entry for "paper1"
-Warning--I didn't find a database entry for "SergiDFT"
-Warning--I didn't find a database entry for "SELENEgit"
 Warning--I didn't find a database entry for "enso2003fault"
-You've used 19 entries,
+You've used 24 entries,
             1791 wiz_defined-function locations,
-            576 strings with 7293 characters,
-and the built_in function-call counts, 4824 in all, are:
-= -- 447
-> -- 197
+            590 strings with 7906 characters,
+and the built_in function-call counts, 5664 in all, are:
+= -- 511
+> -- 240
 < -- 8
-+ -- 74
-- -- 55
-* -- 297
-:= -- 719
-add.period$ -- 61
-call.type$ -- 19
-change.case$ -- 17
++ -- 91
+- -- 67
+* -- 344
+:= -- 856
+add.period$ -- 74
+call.type$ -- 24
+change.case$ -- 21
 chr.to.int$ -- 0
-cite$ -- 19
-duplicate$ -- 229
-empty$ -- 492
-format.name$ -- 55
-if$ -- 1123
+cite$ -- 24
+duplicate$ -- 264
+empty$ -- 586
+format.name$ -- 67
+if$ -- 1311
 int.to.chr$ -- 0
-int.to.str$ -- 19
-missing$ -- 18
-newline$ -- 95
-num.names$ -- 19
-pop$ -- 78
+int.to.str$ -- 24
+missing$ -- 20
+newline$ -- 118
+num.names$ -- 24
+pop$ -- 97
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 121
+skip$ -- 138
 stack$ -- 0
-substring$ -- 298
-swap$ -- 74
+substring$ -- 325
+swap$ -- 80
 text.length$ -- 8
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 0
-while$ -- 53
-width$ -- 21
-write$ -- 207
-(There were 10 warnings)
+while$ -- 60
+width$ -- 26
+write$ -- 255
+(There was 1 warning)
