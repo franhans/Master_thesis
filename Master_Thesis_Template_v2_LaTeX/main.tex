@@ -63,9 +63,17 @@ of the requirements for the master in\\
 \newpage
 \section*{Abstract}
 
-{Every copy of the thesis must have an abstract. An abstract must provide a concise summary of the thesis. In style, the
-abstract should be a miniature version of the thesis: short introduction, a summary of the results, conclusions or main
-arguments presented in the thesis. The abstract may not exceed 150 words for a Degree’s thesis.}
+Safety-critical systems must adhere to specific functional safety standards describing the development process for those systems. One key requirement is the ability to avoid a single fault from causing a system failure, or in other words, avoiding Common Cause Failures (CCFs). Redundancy is a usual solution against CCFs. However, some specific CCFs may affect redundant components identically (e.g., voltage droops, clock interferences), hence potentially leading to identical errors that may go unnoticed and cause a failure.
+Diversity is often deployed along with redundancy to avoid also those CCFs. In the particular case of computing elements (e.g., cores), this is usually realized with some form of lockstep execution where two identical cores execute the same software, but with some time shift among them (aka staggering). Therefore, both cores have different state at any point in time and faults affecting both cores lead to different errors, which can be detected by comparing the outputs.
+Unfortunately, existing solutions have some non-negligible costs: (i) hardware-only solutions hide half of the cores making them non-user visible, hence halving platform performance even for non-critical tasks. Conversely, (ii) software-only solutions are much more flexible but impose the use of a third core to run the lockstep monitor, and require large staggering which has significant impact in performance for short programs.
+
+This thesis devises a new solution aiming at combining the advantages of existing solutions. Our proposal, a hardware diversity-enforcement module (referred to as SafeDE), is an efficient hardware realization of the software monitor. Therefore, it does not hide any core to the end user, it does not require a third core for monitoring purposes, and allows operating with tiny staggering (e.g., few tens of cycles instead of hundreds of thousands as required for the software-only solution). 
+
+We implement and integrate SafeDE in a space multicore prototype in an FPGA and validate that it effectively achieves its requirements with negligible hardware costs. Moreover, this work has already led to the publication of two peer-reviewed articles in especialized conferences and journals.
+
+%{Every copy of the thesis must have an abstract. An abstract must provide a concise summary of the thesis. In style, the
+%abstract should be a miniature version of the thesis: short introduction, a summary of the results, conclusions or main
+%arguments presented in the thesis. The abstract may not exceed 150 words for a Degree’s thesis.}
 
 \input{introduction}
 
