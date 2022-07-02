@@ -113,7 +113,17 @@ We implement and integrate SafeDE in a space multicore prototype in an FPGA and 
 \clearpage
 \section{Conclusions and future development: }
 
-{This should include your summary, conclusions and recommendations. }
+%{This should include your summary, conclusions and recommendations. }
+
+Existing lockstep solutions for safety-critical systems have a number of limitations related to the fact that some cores are not user-visible (hardware lockstep), and related to the performance cost of long staggering and running a monitoring process in an additional cores (software-only light lockstep). 
+
+This thesis has devised, designed, implemented, integrated and validated a hardware module, SafeDE, providing the advantages of the existing solutions for lockstep execution. In particular, we have realized SafeDE in the context of a space multicore prototyped in an FPGA, and have evaluated that it effectively provides diverse redundancy with low staggering (few tens of cycles), without needing any additional core for monitoring purposes (the SafeDE module performs the monitoring itself), and not hiding any core to the end user. Moreover, this is achieved with a tiny overhead largely below 1\% of the area of the SoC. 
+
+The SafeDE module has already been assessed by external experts, which have evaluated it positively by accepting its publication in especialized conferences and journals.
+
+Overall, SafeDE, which we offer as an open source component with permissive license, provides developers with a light-weight module allowing to use non-safety-specific computing cores in the context of safety-related systems without requiring modifications to those IPs (just exporting specific signals). 
+
+As part of our future work, we intend to further integrate SafeDE in other SoCs. Also, beyond SafeDE, we have already developed a complementary module (SafeDM) measuring diversity across two cores so that end users can choose between enforcing diverse redundancy at hardware level with SafeDE, or just let software run unconstrainedly and monitor diversity with SafeDM so that, upon loss of diversity, system level measures are taken. 
 
 %%% BIBLIOGRAPHY %%%
 \newpage
