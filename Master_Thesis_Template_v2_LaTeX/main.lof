@@ -7,5 +7,5 @@
 \contentsline {figure}{\numberline {6}{\ignorespaces N-modular redundancy scheme example with SafeDE\relax }}{23}{figure.caption.10}
 \contentsline {figure}{\numberline {7}{\ignorespaces High-level representation of SafeDE's hardware\relax }}{25}{figure.caption.11}
 \contentsline {figure}{\numberline {8}{\ignorespaces High-level representation of SafeDE integrated into the De-RISC platform\relax }}{26}{figure.caption.12}
-\contentsline {figure}{\numberline {9}{\ignorespaces Excerpt of the assembly code of the benchmark FAC.\relax }}{34}{figure.caption.14}
+\contentsline {figure}{\numberline {9}{\ignorespaces Excerpt of the assembly code of the benchmark FAC.\relax }}{35}{figure.caption.14}
 \contentsline {figure}{\numberline {10}{\ignorespaces Execution time of different TACLeBench benchmakrs normalized w.r.t. their execution time in isolation. Each benchmark is executed 1,000 times.\relax }}{36}{figure.caption.15}
